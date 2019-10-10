@@ -1,0 +1,33 @@
+{
+  "name": "dashboardParametrizable",
+  "version": "1.0.0",
+  "description": "Proyecto residencia que consiste en el desarrollo de un modelo analizador de sentimientos con un dashboard parametrizable",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack --mode development ./project/frontend/src/index.js --output ./project/frontend/static/frontend/main.js",
+    "build": "webpack --mode production ./project/frontend/src/index.js --output ./project/frontend/static/frontend/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LuisLopez97/dashboardParametrizable.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LuisLopez97/dashboardParametrizable/issues"
+  },
+  "homepage": "https://github.com/LuisLopez97/dashboardParametrizable#readme",
+  "devDependencies": {
+    "@babel/core": "^7.6.4",
+    "@babel/preset-env": "^7.6.3",
+    "@babel/preset-react": "^7.6.3",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "prop-types": "^15.7.2",
+    "react": "^16.10.2",
+    "react-dom": "^16.10.2",
+    "webpack": "^4.41.0",
+    "webpack-cli": "^3.3.9"
+  }
+}
