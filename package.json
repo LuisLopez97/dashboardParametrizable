@@ -4,8 +4,9 @@
   "description": "Proyecto residencia que consiste en el desarrollo de un modelo analizador de sentimientos con un dashboard parametrizable",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack --mode development ./project/frontend/src/index.js --output ./project/frontend/static/frontend/main.js",
-    "build": "webpack --mode production ./project/frontend/src/index.js --output ./project/frontend/static/frontend/main.js"
+    "dev": "webpack --mode development  --watch ./dashboard/frontend/src/index.js --output ./dashboard/frontend/static/frontend/main.js",
+    "build": "webpack --mode production ./dashboard/frontend/src/index.js --output ./dashboard/frontend/static/frontend/main.js",
+    "start" : "react-scripts start "
   },
   "repository": {
     "type": "git",
