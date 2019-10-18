@@ -1,0 +1,3 @@
+export const GET_SEARCHS = "GET_SEARCHS";
+export const DELETE_SEARCHS = "DELETE_SEARCHS";
+export const ADD_SEARCHS = "ADD_SEARCHS";

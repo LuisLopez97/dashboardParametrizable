@@ -1,62 +1,49 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
+import { getSearchs } from '../actions/searchs';
 
 class Tabla extends Component {
-    constructor(props) {
-        super(props);
-        this.getTitulo = this.getTitulo.bind(this);
-        this.getDatos = this.getDatos.bind(this);
-        this.getKeys = this.getKeys.bind(this);
+    static PropTypes = {
+        searchs: PropTypes.array.isRequired,
+        getsearchs: PropTypes.array.isRequired
     }
 
-    getKeys = function () {
-        return Object.keys(this.props.data[0]);
-    }
-
-    getTitulo = function () {
-        var keys = this.getKeys();
-        console.log(keys);
-        return keys.map((key, index) => {
-            return <th key={key}>{key.toUpperCase()}</th>
-        })
-    }
-
-    getDatos = function () {
-        var items = this.props.data;
-        var keys = this.getKeys();
-        return items.map(
-            (row, index) => {
-                return <tr key={index}> <RenderRow key={index} data={row} keys={keys} /> </tr>
-            }
-        )
-    }
-    getLoading = function () {
-        if (this.props.loading) {
-            return <h2>Loading...</h2>
-        }
+    componentDidMount() {
+        this.props.getSearchs();
     }
 
     render() {
-        console.log(this.props.data);
         return (
-        <div className="table-responsive-md overflow-auto">
-            {this.getLoading()}
+            <div className="table-responsive-md overflow-auto">
                 <table className="table table-hover table-striped table-bordered table-sm">
-                <thead className="thead-dark">
-                    <tr>{this.getTitulo()}</tr>
-                </thead>
-                <tbody>
-                    {this.getDatos()}
-                </tbody>
-            </table>
-        </div>)
+                    <thead className="thead-dark">
+                        <tr>
+                            <th>Sentimiento</th>
+                            <th>Rason del sentimiento</th>
+                            <th>Usuario</th>
+                            <th>Texto</th>
+                            <th>Ubicacion</th>
+                        </tr>
+                    </thead>
+                    <tbody className="p-5">
+                        {this.props.searchs.map(search => (
+                            <tr key={search.id} className="p-5">
+                                <td>{search.airline_sentiment}</td>
+                                <td>{search.negativereason}</td>
+                                <td>{search.name}</td>
+                                <td>{search.text}</td>
+                                <td>{search.tweet_location}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>)
     }
 }
 
-const RenderRow = (props) => {
-    return props.keys.map((key, index) => {
-        return <td key={props.data[key]}>{props.data[key]}</td>
-    }
-    )
-}
+const mapStateToProps = state => ({
+    searchs: state.searchs.searchs
+})
 
-export default Tabla;
+export default connect(mapStateToProps, { getSearchs })(Tabla);

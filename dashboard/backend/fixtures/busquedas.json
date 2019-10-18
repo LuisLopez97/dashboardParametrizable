@@ -1,18 +1,3 @@
 [
-    {
-        "model": "backend.search",
-        "pk": 1,
-        "fields": {
-            "keyWord": "#chevy",
-            "email": "something@gmail.com"
-        }
-    },
-    {
-        "model": "backend.search",
-        "pk": 2,
-        "fields": {
-            "keyWord": "Tom",
-            "email": "tomsomething@gmail.com"
-        }
-    }
+    
 ]
