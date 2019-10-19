@@ -1,3 +1,8 @@
+# Propósito: Recibir un CSV con Tweets y preprocesarlos (limpiarlos) para su futuro tratamiento 
+# con alguna herramienta de Feature Extraction
+# Creado el 18 de octubre de 2019
+# Autor: Alejandro Gibran Pérez Pérez
+
 # Importar de librerías
 import numpy as np
 import pandas as pd
@@ -9,284 +14,172 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem import WordNetLemmatizer
 import re
 import emoji
+import json
 import seaborn as sns
-pd.set_option('display.max_colwidth', -1)
 
 class Preprocesamiento:
+    columna_texto             = ""
+    columna_sentimiento       = ""
     diccionario_contracciones = {}
     diccionario_emoticones    = {}
     diccionario_slang         = {}
 
-    def __init__(self, archivo, nombre_columna_texto):
-        
+
+    def __init__(self, archivo, columna_texto, columna_sentimiento):
+        # Actualizar diccionarios
+        pd.set_option('display.max_colwidth', -1)
+        nltk.download('stopwords')
+
+        # Guardar argumentos para la instancia
+        self.columna_texto = columna_texto
+        self.columna_sentimiento = columna_sentimiento
+
         # Lectura de CSV de Tweets
-        self.data = pd.read_csv(archivo)
+        self.tweets_df = pd.read_csv(archivo)
 
         # Seleccionar la columna con los Tweets
-        self.tweets = self.data[nombre_columna_texto]
+        self.tweets = self.tweets_df[columna_texto]
 
         # Cargar los diccionarios
-        self.diccionario_contracciones = self.loadDiccionarioContracciones()
-        self.diccionario_emoticones = self.loadDiccionarioEmoticones()
-        #self.diccionario_slang = self.loadDiccionarioSlang()
-        
-        print(self.tweets.head(20))
-        self.limpieza()
+        self.diccionario_contracciones = self.json2dict("contractions.json")    # Contracciones
+        self.diccionario_emoticones    = self.json2dict("emoticons.json")       # Emoticones
+        self.diccionario_slang         = self.json2dict("slang.json")           # Slang
+
+        # Iniciar Limpieza
+        tweets_limpios = self.limpieza()
+
+        # Iniciar lemmatización
+        lemmatizated_data = self.lemmatization(tweets_limpios["clean_text"])
+
+        # Borrar la columna de datos limpios
+        del tweets_limpios["clean_text"]
+
+        # Añadir columna de datos lemmatizados
+        tweets_limpios.insert(0, 'data_lemmatized', lemmatizated_data)
+
+        # Sustitur los valores de la columna de sentimientos por 1, 0 , -1
+        tweets_limpios["sentiment"] = tweets_limpios["sentiment"].replace(to_replace=["positive","neutral","negative"], value=[1,0,-1])
+
+        # Guardar el Dataframe como un CSV
+        export_csv = tweets_limpios.to_csv (r'data_lemmatized.csv', index = None, header=True)
+
 
     def limpieza(self):
-        
         # No URLs
-        data_noURL = self.tweets.str.replace('\w+:\/\/\S+', "")
-        
+        self.tweets = self.tweets.str.replace('\w+:\/\/\S+', "")
+
         # No Usertags
-        data_noUser = data_noURL.str.replace('@(\w+)', "")
+        self.tweets = self.tweets.str.replace('@(\w+)', "")
         
         # No Hashtags
-        data_noHashtag = data_noUser.str.replace('#(\w+)',"")
+        self.tweets = self.tweets.str.replace('#(\w+)',"")
 
         # Convertir contracciones
-            # Creando un conjunto de contracciones
-        conjunto_contracciones = set(self.diccionario_contracciones.keys())
-
-            # Reemplazar apostrofe con comilla simple
-        data_noContracciones = data_noHashtag.str.replace("’", "'")
-
-            # Aplicar la funcion traducir_contracciones a cada registro del dataframe
-        data_noContracciones = data_noContracciones.apply(
-            lambda x: self.traducir_contracciones(x, conjunto_contracciones))
-
+        conjunto_contracciones = set(self.diccionario_contracciones.keys())     # Creando un conjunto de contracciones
+        self.tweets = self.tweets.str.replace("’", "'")                         # Reemplazar apostrofe con comilla simple
+        self.tweets = self.tweets.apply(                                        # Traducir cada registro del dataframe
+            lambda x: self.traducir(x, self.diccionario_contracciones, conjunto_contracciones)) 
 
         # Convertir Emoticones
-            # Creando un conjunto de emoticones
-        conjunto_emoticones = set(self.diccionario_emoticones.keys())
-            # Aplicar la funcion traducir_emoticones a cada registro del dataframe
-        data_noEmoticones = data_noContracciones.apply(
-            lambda x: self.traducir_emoticones(x, conjunto_emoticones))
+        conjunto_emoticones = set(self.diccionario_emoticones.keys())           # Creando un conjunto de emoticones            
+        self.tweets = self.tweets.apply(                                        # Traducir cada registro del dataframe
+            lambda x: self.traducir(x, self.diccionario_emoticones, conjunto_emoticones))
         
-        print(data_noEmoticones.head(20))
-    
-    def loadDiccionarioContracciones(self):
-        return {
-            "ain't":"is not",
-            "amn't":"am not",
-            "aren't":"are not",
-            "can't":"cannot",
-            "'cause":"because",
-            "couldn't":"could not",
-            "couldn't've":"could not have",
-            "could've":"could have",
-            "daren't":"dare not",
-            "daresn't":"dare not",
-            "dasn't":"dare not",
-            "didn't":"did not",
-            "doesn't":"does not",
-            "don't":"do not",
-            "e'er":"ever",
-            "em":"them",
-            "everyone's":"everyone is",
-            "finna":"fixing to",
-            "gimme":"give me",
-            "gonna":"going to",
-            "gon't":"go not",
-            "gotta":"got to",
-            "hadn't":"had not",
-            "hasn't":"has not",
-            "haven't":"have not",
-            "he'd":"he would",
-            "he'll":"he will",
-            "he's":"he is",
-            "he've":"he have",
-            "how'd":"how would",
-            "how'll":"how will",
-            "how're":"how are",
-            "how's":"how is",
-            "I'd":"I would",
-            "I'll":"I will",
-            "I'm":"I am",
-            "I'm'a":"I am about to",
-            "I'm'o":"I am going to",
-            "isn't":"is not",
-            "it'd":"it would",
-            "it'll":"it will",
-            "it's":"it is",
-            "I've":"I have",
-            "kinda":"kind of",
-            "let's":"let us",
-            "mayn't":"may not",
-            "may've":"may have",
-            "mightn't":"might not",
-            "might've":"might have",
-            "mustn't":"must not",
-            "mustn't've":"must not have",
-            "must've":"must have",
-            "needn't":"need not",
-            "ne'er":"never",
-            "o'":"of",
-            "o'er":"over",
-            "ol'":"old",
-            "oughtn't":"ought not",
-            "shalln't":"shall not",
-            "shan't":"shall not",
-            "she'd":"she would",
-            "she'll":"she will",
-            "she's":"she is",
-            "shouldn't":"should not",
-            "shouldn't've":"should not have",
-            "should've":"should have",
-            "somebody's":"somebody is",
-            "someone's":"someone is",
-            "something's":"something is",
-            "that'd":"that would",
-            "that'll":"that will",
-            "that're":"that are",
-            "that's":"that is",
-            "there'd":"there would",
-            "there'll":"there will",
-            "there're":"there are",
-            "there's":"there is",
-            "these're":"these are",
-            "they'd":"they would",
-            "they'll":"they will",
-            "they're":"they are",
-            "they've":"they have",
-            "this's":"this is",
-            "those're":"those are",
-            "'tis":"it is",
-            "'twas":"it was",
-            "wanna":"want to",
-            "wasn't":"was not",
-            "we'd":"we would",
-            "we'd've":"we would have",
-            "we'll":"we will",
-            "we're":"we are",
-            "weren't":"were not",
-            "we've":"we have",
-            "what'd":"what did",
-            "what'll":"what will",
-            "what're":"what are",
-            "what's":"what is",
-            "what've":"what have",
-            "when's":"when is",
-            "where'd":"where did",
-            "where're":"where are",
-            "where's":"where is",
-            "where've":"where have",
-            "which's":"which is",
-            "who'd":"who would",
-            "who'd've":"who would have",
-            "who'll":"who will",
-            "who're":"who are",
-            "who's":"who is",
-            "who've":"who have",
-            "why'd":"why did",
-            "why're":"why are",
-            "why's":"why is",
-            "won't":"will not",
-            "wouldn't":"would not",
-            "would've":"would have",
-            "y'all":"you all",
-            "you'd":"you would",
-            "you'll":"you will",
-            "you're":"you are",
-            "you've":"you have",
-            "Whatcha":"What are you",
-            "luv":"love",
-            "sux":"sucks",
-    }
+        # Convertir emoticones
+        self.tweets = self.tweets.apply(lambda x: emoji.demojize(x))
+        self.tweets = self.tweets.str.replace(":"," ")
 
-    def loadDiccionarioEmoticones(self):
-        return {
-            ":)": "smiley",
-            ":‑)": "smiley",
-            ":-]": "smiley",
-            ":-3": "smiley",
-            ":->": "smiley",
-            "8-)": "smiley",
-            ":-}": "smiley",
-            ":)": "smiley",
-            ":]": "smiley",
-            ":3": "smiley",
-            ":>": "smiley",
-            "8)": "smiley",
-            ":}": "smiley",
-            ":o)": "smiley",
-            ":c)": "smiley",
-            ":^)": "smiley",
-            "=]": "smiley",
-            "=)": "smiley",
-            ":-))": "smiley",
-            ":-D": "smiley",
-            "8‑D": "smiley",
-            "x‑D": "smiley",
-            "X‑D": "smiley",
-            ":D": "smiley",
-            "8D": "smiley",
-            "xD": "smiley",
-            "XD": "smiley",
-            ":-d": "smiley",
-            "8‑d": "smiley",
-            "x‑d": "smiley",
-            "X‑d": "smiley",
-            ":d": "smiley",
-            "8d": "smiley",
-            "xd": "smiley",
-            "Xd": "smiley",
-            ":‑(": "sad",
-            ":‑c": "sad",
-            ":‑<": "sad",
-            ":‑[": "sad",
-            ":(": "sad",
-            ":c": "sad",
-            ":<": "sad",
-            ":[": "sad",
-            ":-||": "sad",
-            ">:[": "sad",
-            ":{": "sad",
-            ":@": "sad",
-            ">:(": "sad",
-            ":'‑(": "sad",
-            ":'(": "sad",
-            ":‑P": "playful",
-            "X‑P": "playful",
-            "x‑p": "playful",
-            ":‑p": "playful",
-            ":‑Þ": "playful",
-            ":‑þ": "playful",
-            ":‑b": "playful",
-            ":P": "playful",
-            "XP": "playful",
-            "xp": "playful",
-            ":p": "playful",
-            ":Þ": "playful",
-            ":þ": "playful",
-            ":b": "playful",
-            ";p": "playful",
-            "<3": "love",
-        }
+        # Remover signos de puntuación
+        self.tweets = self.tweets.str.replace("[\.\,\!\?\:\;\-\=]", " ")
+        self.tweets = self.tweets.str.replace(" +"," ")                         # Reducir los espacios a solo 1
 
-    def traducir_contracciones(self, texto, contracciones):
+        # Convertir todo a minúsculas
+        self.tweets = self.tweets.str.lower()
+
+        # Interpretar el slang
+        conjunto_slang = set(self.diccionario_slang.keys())                     # Creando un conjunto de slang            
+        self.tweets = self.tweets.apply(                                        # Traducir cada registro del dataframe
+            lambda x: self.traducir(x, self.diccionario_slang, conjunto_slang))
+
+        # Remover carácteres repetidos
+        self.tweets = self.tweets.transform(lambda x: re.sub(r'(.)\1+', r'\1\1', x))
+
+        # Remover StopWords
+        stop = stopwords.words("english")
+        stop_set = set(stop)
+        self.tweets = self.tweets.apply(lambda x: ' '.join([word for word in x.split() if word not in (stop_set)]))
+
+        # Unir columna limpia al Dataframe
+        return pd.DataFrame(dict(clean_text = self.tweets , sentiment = self.tweets_df[self.columna_sentimiento]))
+
+
+    # Funcion para traducir palabras de un texto por su respectivo significado
+    def traducir(self, texto, diccionario, conjunto):
         texto = texto.split(" ")
         j = 0
         for palabra in texto:
+            if diccionario == self.diccionario_slang:
+                palabra = palabra.upper()
             # Checa si las palabras seleccionadas coinciden con el connjunto de emoticones
-            if palabra in contracciones:
+            if palabra in conjunto:
                 #print("Contraccion con ", palabra, " a ", diccionario_contracciones[palabra], " en ", texto)
                 # Si encuentra una coincidencia, la reemplaza con su respectiva traducción
-                texto[j] = self.diccionario_contracciones[palabra]
+                texto[j] = diccionario[palabra]
             j = j + 1
         # Retorna la cadena corregida
         return ' '.join(texto)
 
-    def traducir_emoticones(self, texto, emoticones):
-        texto = texto.split(" ")
-        j = 0
-        for palabra in texto:
-            # Checa si las palabras seleccionadas coinciden con el connjunto de emoticones
-            if palabra in emoticones:
-                # Si encuentra una coincidencia, la reemplaza con su respectiva traducción
-                texto[j] = self.diccionario_emoticones[palabra]
-            j = j + 1
-        # Retorna la cadena corregida
-        return ' '.join(texto)
 
-ps = Preprocesamiento("Tweets_pg_prepared.csv", "text")
+    # Funcion para convertir un archivo JSON a diccionario
+    def json2dict(self, json_file):
+        with open(json_file, 'r', encoding='utf-8') as f:
+            dictionary = json.load(f)
+        return dictionary
+
+
+    # Funcion para Stemmizar
+    # Porter
+    def porterStemmer(self, texto):
+        nltk.download('punkt')
+        ps = PorterStemmer()
+        porter_stemmer_tokenized = texto.apply(lambda x: self.stemOracion(x, ps))
+        return porter_stemmer_tokenized
+
+    # Lancaster
+    def lancasterStemmer(self, texto):
+        nltk.download('punkt')
+        ls = LancasterStemmer()
+        lancaster_stemmer_tokenized = texto.apply(lambda x: self.stemOracion(x, ls))
+        return lancaster_stemmer_tokenized
+    
+
+    # Funcion para Lemmatizar
+    def lemmatization(self, texto):
+        nltk.download('wordnet')
+        lm = WordNetLemmatizer()
+        data_lemmatized = texto.apply(lambda x: self.stemOracion(x, lm))
+        return data_lemmatized
+
+
+    # Funcion que Tokeniza y realiza el stemmizacion o la lemmatizacion
+    def stemOracion(self, oracion, stemmer):
+        token_words = word_tokenize(oracion)
+        resultado = []
+        lemmatizer = False
+        if "lemmatize" in dir(stemmer):
+            lemmatizer = True
+        for word in token_words:
+            if lemmatizer:
+                resultado.append(stemmer.lemmatize(word, pos="v"))
+            else: 
+                resultado.append(stemmer.stem(word))
+        return " ".join(resultado)
+
+   
+    # Funcion para hacer POS tag
+    def posTag(self, texto):
+        nltk.download('averaged_perceptron_tagger')
+        data_POS = texto.apply(lambda x: nltk.pos_tag(nltk.word_tokenize(x)))
+        return data_POS
+
+#Preprocesamiento("Tweets_pg_prepared.csv", "text", "airline_sentiment")
