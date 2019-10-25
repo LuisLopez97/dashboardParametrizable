@@ -1,7 +1,7 @@
 import { GET_SEARCHS, DELETE_SEARCHS, ADD_SEARCHS } from '../actions/types.js';
 
 const initialState = {
-    searchs: []
+    searchs: [],
 }
 
 export default function (state = initialState, action) {

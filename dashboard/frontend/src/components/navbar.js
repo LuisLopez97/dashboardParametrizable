@@ -46,26 +46,38 @@ import React, { Component } from 'react';
             </nav>
         </div> */}
 
+
 class Navbar extends Component {
+    constructor(props) {
+        super(props);
+    }
+    getDate = () => {
+        console.log("holamundo")
+    }
     render() {
         return (
-            <div className="">
-                AQUI IRA UNA NAVBAR CUANDO ESTE LISTAAA
-                <hr />
-                <div className="navbar navbar-dark">
-                    <ul className="navbar-nav">
-                        <li className="nav-item">
-                            <a href="/" className="nav-link">LINK</a>
+            <nav>
+                <div className="mt-5">
+                    <a className="h3 text-light mt-5 pt-5" href="/">Navbar</a>
+                </div>
+                <div className="mt-3 text-center text-light navbar-dark bg-primary my-5">
+                    <ul className="navbar-nav text-center">
+                        <li className="nav-item mt-3 py-5 d-none d-md-block">
+                            <a className="nav-link" href="#">Home</a>
                         </li>
-                        <li className="nav-item">
-                            <a href="/" className="nav-link">LINK</a>
+                        <li className="nav-item mt-3 py-5 d-none d-md-block">
+                            <a className="nav-link" href="/#/Tweets">Tweets</a>
                         </li>
-                        <li className="nav-item">
-                            <a href="/" className="nav-link">LINK</a>
+                        <li className="nav-item mt-3 py-5 d-none d-md-block">
+                            <a className="nav-link" href="#">Chart</a>
                         </li>
                     </ul>
                 </div>
-            </div>
+                <footer>
+                    <p className="text-light h-6" id="fecha">
+                    </p>
+                </footer>
+            </nav>
         )
     }
 }

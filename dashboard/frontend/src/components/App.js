@@ -8,6 +8,7 @@ import { HashRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
 // Componentes
 import Navbar from './navbar'
 import Section1 from './section1'
+import DataTable from './dataTable';
 
 class App extends React.Component {
 
@@ -26,6 +27,8 @@ class App extends React.Component {
                                         <Switch>
                                             <Route exact path="/"
                                                 component={Section1} />
+                                            <Route exact path="/Tweets"
+                                                component={DataTable} />
                                         </Switch>
                                     </Router>
                                 </div>

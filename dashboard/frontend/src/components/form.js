@@ -45,19 +45,20 @@ export class Form extends Component {
                 </nav>
                 <div className="tab-content" id="nav-tabContent">
                     <div className="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
-
                         <div className="align-middle">
                             <form onSubmit={this.handleSubmit}>
                                 <p className="display-4 py-4 text-center">Iniciar Recoleccion</p>
                                 <div className="form-group text-center py-3">
                                     <label>Palabra a buscar:</label>
-                                    <input
-                                        type='text'
-                                        value={this.state.keyWord}
-                                        onChange={this.handlekeyWordChange} className="form-control"
-                                        id="inputKey"
-                                        placeholder="#PalabraDeInteres"
-                                    />
+                                    <div className="border border-primary">
+                                        <input
+                                            type='text'
+                                            value={this.state.keyWord}
+                                            onChange={this.handlekeyWordChange} className="form-control"
+                                            id="inputKey"
+                                            placeholder="#PalabraDeInteres"
+                                        />
+                                    </div>
                                 </div>
                                 <div className="d-flex justify-content-center py-5">
                                     <button

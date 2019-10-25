@@ -7,7 +7,19 @@ export const getSearchs = () => dispatch => {
         .then(res => {
             dispatch({
                 type: GET_SEARCHS,
-                payload: res.data.slice(0, 10)
+                payload: res.data.slice(0, 5),
+            });
+        })
+        .catch(err => console.log(err));
+};
+
+export const getData = (loading) => dispatch => {
+    Axios.get('/static/tweetsp.json/')
+        .then(res => {
+            loading = false;
+            dispatch({
+                type: GET_SEARCHS,
+                payload: res.data, loading
             });
         })
         .catch(err => console.log(err));
