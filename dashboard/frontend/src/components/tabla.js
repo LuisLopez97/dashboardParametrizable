@@ -20,10 +20,10 @@ class Tabla extends Component {
                     <thead className="thead-dark">
                         <tr>
                             <th>Sentimiento</th>
-                            <th>Rason del sentimiento</th>
+                            <th>Razón del sentimiento</th>
                             <th>Usuario</th>
                             <th>Texto</th>
-                            <th>Ubicacion</th>
+                            <th>Ubicación</th>
                         </tr>
                     </thead>
                     <tbody className="p-5">

@@ -9,6 +9,7 @@ import { HashRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
 import Navbar from './navbar'
 import Section1 from './section1'
 import DataTable from './dataTable';
+import Chart from './chart';
 
 class App extends React.Component {
 
@@ -19,16 +20,18 @@ class App extends React.Component {
                     <div className="bg-primary">
                         <div className="container-fluid">
                             <div className="row bg-primary">
-                                <div className="col-xl-1 lg-1 md-1 sm-1 sticky-top bg-primary">
+                                <div className="col-lg-1 navbar-dark bg-primary sidebar sidebar-sticky">
                                     <Navbar />
                                 </div>
-                                <div className="col-xl-11 lg-10 md-10 sm-11 bg-light">
+                                <div className="col-lg-11 bg-secondary">
                                     <Router>
                                         <Switch>
                                             <Route exact path="/"
                                                 component={Section1} />
                                             <Route exact path="/Tweets"
                                                 component={DataTable} />
+                                            <Route exact path="/Charts"
+                                                component={Chart} />
                                         </Switch>
                                     </Router>
                                 </div>

@@ -9,7 +9,11 @@
   <link rel="shortcut icon" href="static/twitter.ico" />
 
   <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href=https://bootswatch.com/4/lux/bootstrap.min.css> </head> <body class="">
+  <link rel="stylesheet" href=https://bootswatch.com/4/lux/bootstrap.min.css> <link rel="stylesheet"
+    href="static/style.css">
+</head>
+
+<body class="">
   <div id="app">
     <!-- React -->
   </div>
@@ -24,12 +28,8 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
     integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
     crossorigin="anonymous"></script>
-  </body>
-  {% load static %}
-  <script src="{% static "frontend/main.js" %}"></script>
-  <script>
-    var d = new Date()
-    document.getElementById("fecha").innerHTML = d;
-  </script>
+</body>
+{% load static %}
+<script src="{% static "frontend/main.js" %}"></script>
 
 </html>

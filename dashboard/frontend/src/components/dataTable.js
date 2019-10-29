@@ -14,7 +14,7 @@ class DataTable extends Component {
     }
 
     componentDidMount() {
-        this.getData();
+        this.getData()
     }
     getData = () => {
         this.setState({ loading: true }, () => {
@@ -22,7 +22,6 @@ class DataTable extends Component {
                 .then(result => this.setState({
                     loading: false,
                     searchs: [...result.data],
-                    finalpage: false,
                 }));
         });
     }
@@ -36,7 +35,7 @@ class DataTable extends Component {
                 sortable: true,
             },
             {
-                name: 'Razon del Sentimiento',
+                name: 'Razón del Sentimiento',
                 selector: 'negativereason',
                 sortable: true,
                 wrap: true,
@@ -53,26 +52,36 @@ class DataTable extends Component {
                 sortable: true,
             },
             {
-                name: 'Ubicacion',
+                name: 'Ubicación',
                 selector: 'tweet_location',
                 sortable: true,
             },
         ];
 
         return (
-            <div className="text-center">
-                <h2 className="mt-2">Tabla de Datos</h2>
+            <div className="">
                 {this.state.loading ? <div className="d-flex justify-content-center">
                     <div className="spinner-border py-5 px-5" role="status">
                         <span className="sr-only">Loading...</span>
                     </div>
                 </div>
                     :
-                    <Datatable
-                        columns={columns}
-                        data={this.state.searchs}
-                        pagination
-                    />
+                    <div className="my-2 mx-4 p-0">
+                        <div className="container">
+                            <h2 className="text-center">Tabla de Datos</h2>
+                            <Datatable
+                                columns={columns}
+                                data={this.state.searchs}
+                                pagination
+                                responsive
+                                striped="true"
+                                highlightOnHover="true"
+                                noHeader
+                                dense
+                                paginationPerPage="10"
+                            />
+                        </div>
+                    </div>
                 }
             </div>
         )
