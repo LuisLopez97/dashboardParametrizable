@@ -1,6 +1,8 @@
 import { GET_SEARCHS, DELETE_SEARCHS, ADD_SEARCHS } from './types';
 import Axios from 'axios';
 
+// ACTIONS ES LA COMBINACION DE REDUX Y AXIOS PARA CARGAR FORMULARIOS Y BASE DE DATOS DEL BACK AL FRONT, SOLO NECESARIO PARA LAS PALABRAS CLAVES.
+
 // GET SEARCHS
 export const getSearchs = () => dispatch => {
     Axios.get('/static/tweetsp.json/')
