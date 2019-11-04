@@ -6,7 +6,6 @@ import pandas as pd
 import nltk
 import csv
 import pickle
-import sys
 # import json
 
 class FeatureExtraction:
@@ -64,7 +63,6 @@ class FeatureExtraction:
 
     # Definir el feature extractor
     def document_features(self, document):
-        sys.stdout.flush()
         document_words = set(document)
         features = {}
         for word in self.word_features:
