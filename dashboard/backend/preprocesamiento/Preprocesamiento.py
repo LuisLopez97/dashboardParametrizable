@@ -85,12 +85,12 @@ class Preprocesamiento:
         self.tweets = self.tweets.apply(                                        # Traducir cada registro del dataframe
             lambda x: self.traducir(x, self.diccionario_emoticones, conjunto_emoticones))
         
-        # Convertir emoticones
+        # Convertir emojis
         self.tweets = self.tweets.apply(lambda x: emoji.demojize(x))
         self.tweets = self.tweets.str.replace(":"," ")
 
-        # Remover signos de puntuación
-        self.tweets = self.tweets.str.replace("[\.\,\!\?\:\;\-\=]", " ")
+        # Remover todo menos letras y numeros (y espacios)
+        self.tweets = self.tweets.str.replace('[^0-9a-zA-Z ]+', '')
         self.tweets = self.tweets.str.replace(" +"," ")                         # Reducir los espacios a solo 1
 
         # Convertir todo a minúsculas
@@ -100,6 +100,9 @@ class Preprocesamiento:
         conjunto_slang = set(self.diccionario_slang.keys())                     # Creando un conjunto de slang            
         self.tweets = self.tweets.apply(                                        # Traducir cada registro del dataframe
             lambda x: self.traducir(x, self.diccionario_slang, conjunto_slang))
+
+        # Remover todo lo que no sea letras para este punto
+        self.tweets = self.tweets.str.replace('[^a-zA-Z ]+', '')
 
         # Remover carácteres repetidos
         self.tweets = self.tweets.transform(lambda x: re.sub(r'(.)\1+', r'\1\1', x))

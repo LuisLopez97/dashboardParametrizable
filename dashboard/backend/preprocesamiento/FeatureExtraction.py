@@ -148,7 +148,7 @@ class FeatureExtraction:
             print(f"Training set: {i}")
             if i == 0:                  # Si es la primera iteracion
                 train_feature_sets = [(self.document_features(str(d)), c) for (d,c) in tqdm(train[:limite])]
-            elif (i+1) == divisor:      # Si es la última iteracion
+            elif (i+1) == self.divisor:      # Si es la última iteracion
                 train_feature_sets = [(self.document_features(str(d)), c) for (d,c) in tqdm(train[limite:])]
             else:                       # Si es cualquier otra iteracion
                 train_feature_sets = [(self.document_features(str(d)), c) for (d,c) in tqdm(train[inicio:limite])]
