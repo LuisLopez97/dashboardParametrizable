@@ -1,11 +1,11 @@
 # Importacion de librerias
 from sklearn.utils import resample
 from tqdm import tqdm
-import numpy as np
 import pandas as pd
+import numpy as np
+import pickle
 import nltk
 import csv
-import pickle
 # import json
 
 class FeatureExtraction:

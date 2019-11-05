@@ -4,8 +4,10 @@
 # Autor: Alejandro Gibran Pérez Pérez
 
 # Importar de librerías
-from nltk.tokenize import sent_tokenize, word_tokenize
+from LongFunctionProgress import provide_progress_bar
+from LongFunctionProgress import progress_wrapped
 from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
 from nltk.stem import LancasterStemmer
 from nltk.stem import PorterStemmer
 from nltk.corpus import stopwords
@@ -198,7 +200,7 @@ class Preprocesamiento:
         lancaster_stemmer_tokenized = texto.apply(lambda x: self.stemOracion(x, ls))
         return lancaster_stemmer_tokenized
 
-
+    @progress_wrapped(estimated_time=100)
     # Funcion para Lemmatizar
     def lemmatization(self, texto):
         print("Actualizando Diccionario: Lemmatizacion")

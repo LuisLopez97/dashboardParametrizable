@@ -1,26 +1,17 @@
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
-from imblearn.over_sampling import SMOTE
-from imblearn.under_sampling import NearMiss
-from longFunctionProgress import provide_progress_bar
-from longFunctionProgress import progress_wrapped
 from Preprocesamiento import Preprocesamiento as preprocesamiento
 from FeatureExtraction2 import FeatureExtraction as fe
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
-import os
 import pickle
+import os
 
 class Prediction:
-    def __init__(self, nombre_clasificador, nombre_vectorizador, test_data):
+    def __init__(self, nombre_clasificador, nombre_vectorizador, test_data, columna_tweets):
         self.nombre_clasificador = nombre_clasificador
         self.nombre_vectorizador = nombre_vectorizador
         self.test_data = test_data
+        self.columna_tweets = columna_tweets
 
     def predecir(self):
         # Definir ruta para lectura de Pickle de clasificador
@@ -34,10 +25,10 @@ class Prediction:
         # Leer dataset real
         dataset = os.path.join(cur_path, 'TestData', self.test_data)
         tweets = pd.read_csv(dataset, encoding='ISO-8859-1')
-        features = tweets['SentimentText']
+        features = tweets[self.columna_tweets]
 
         # Preprocesamiento
-        prep = preprocesamiento("test.csv", "SentimentText", "Sentiment")
+        prep = preprocesamiento("test.csv", self.columna_tweets, "")
         tweets_limpios = prep.limpieza(features)
 
         # lemmatización
@@ -45,9 +36,11 @@ class Prediction:
         lemmatizated_data = prep.lemmatization(tweets_limpios)
 
         # Feature Extraction: Bag of Words
+        print("Feature Extraction: Bag of Words")
         count_test = vectorizer.transform(lemmatizated_data.values.astype('U'))
 
         # Prediccion
+        print("Prediccion con Multinomial Naive Bayes")
         pred = clf.predict(count_test)
 
         # Unir prediccion al Dataframe
