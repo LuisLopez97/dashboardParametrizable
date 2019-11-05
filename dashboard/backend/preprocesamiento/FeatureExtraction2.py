@@ -6,29 +6,73 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 from imblearn.over_sampling import SMOTE
 from imblearn.under_sampling import NearMiss
+from longFunctionProgress import provide_progress_bar
+from longFunctionProgress import progress_wrapped
+from tqdm import tqdm
 import pandas as pd
 import numpy as np
+import os
+import pickle
 
-class FeatureExtraction2:
+
+class FeatureExtraction:
     def __init__(self, dataset,columna_tweets, columna_sentimiento):
+        self.dataset = dataset
+        self.columna_tweets = columna_tweets
+        self.columna_sentimiento = columna_sentimiento
 
-        # Leer Dataset
-        pd.set_option('display.max_colwidth', -1)
-        tweets = pd.read_csv(dataset)
-        y = tweets[columna_sentimiento]
-        
-        # Conjunto de entrenamiento y prueba
-        X_train, X_test, y_train, y_test = train_test_split(
-            tweets[columna_tweets], y, test_size=0.33, random_state=53)
+    def extraction(self):
+        print("=== FEATURE EXTRACTION INICIADO ===")
+        # Cargando rutas y lectura dataset
+        x, y = self.path('DB')
+
+        # Dividir conjuntos (Entrenamiento y pruebas)
+        X_train, X_test, y_train, y_test = self.split(x, y)
 
         # Feature Extraction
-        X_features_train, X_features_test, vectorizer = self.bagOfWords(X_train,X_test)
+        print("Feature Extraction: Bag of Words...")
+        X_features_train, X_features_test, vectorizer = self.bagOfWords(
+            X_train, X_test)
 
         # Upsamping SMOTE
-        X_resampled, y_resampled = self.overSamplingSMOTE(X_features_train, y_train, vectorizer)
+        print("Upsamping SMOTE...")
+        X_resampled, y_resampled = self.overSamplingSMOTE(
+            X_features_train, y_train, vectorizer)
 
         # Modeling
-        clf = self.MultiNaiveBayes(X_resampled, X_features_test, y_resampled, y_test)
+        print("Modelado: MultinomialNB...")
+        clf = self.MultiNaiveBayes(X_resampled, X_features_test, y_resampled,
+                                   y_test)
+
+        # Guardando como pickle
+        print(f"Guardando pickle: clf...")
+        # Training Set
+        cur_path = os.path.dirname(__file__)
+        _archivo = os.path.join(cur_path, 'Classifiers', "MultinomialNB")
+        with open(_archivo, 'wb') as pickleFile:
+            pickle.dump(clf, pickleFile)
+        print(f"¡Pickle guardado con éxito!")
+        print("=== FEATURE EXTRACTION TERMINADO ===")
+
+    def path(self, carpeta):
+        # Cargando rutas
+        cur_path = os.path.dirname(__file__)
+        _archivo = os.path.join(cur_path, carpeta, self.dataset)
+        # Leer Dataset
+        print("Leyendo Dataset...")
+        pd.set_option('display.max_colwidth', -1)
+        tweets = pd.read_csv(_archivo)
+        x = tweets[self.columna_tweets]
+        y = tweets[self.columna_sentimiento]
+        return x, y
+
+    def split(self, x, y):
+        # Conjunto de entrenamiento y prueba
+        print("Creando conjunto de entrenamiento y prueba...")
+        X_train, X_test, y_train, y_test = train_test_split(
+            x, y, test_size=0.33, random_state=53)
+        return X_train, X_test, y_train, y_test
+
 
     def bagOfWords(self,X_train, X_test):
         # Inicializar al objeto CountVectorizer: count_vectorizer
@@ -40,8 +84,18 @@ class FeatureExtraction2:
         #print(count_vectorizer.get_feature_names()[:30])
         count_df = pd.DataFrame(count_train.A, columns=count_vectorizer.get_feature_names())
         print(count_df.head())
+
+        # Guardando como pickle
+        print(f"Guardando pickle: vectorizer...")
+        # Training Set
+        cur_path = os.path.dirname(__file__)
+        _archivo = os.path.join(cur_path, 'Vectorizers', "CountVectorizer")
+        with open(_archivo, 'wb') as pickleFile:
+            pickle.dump(count_vectorizer, pickleFile)
+        print(f"¡Pickle guardado con éxito!")
+
         return count_train, count_test, count_vectorizer
-        
+
     def TfidfVectorizer(self, X_train, X_test):
         # Inicializar al objeto TfidfVectorizer: tfidf_vectorizer
         tfidf_vectorizer = TfidfVectorizer(stop_words="english", max_df=0.7)
@@ -57,7 +111,7 @@ class FeatureExtraction2:
             tfidf_train.A, columns=tfidf_vectorizer.get_feature_names())
         print(tfidf_df.head())
         return tfidf_train, tfidf_test, tfidf_vectorizer
-    
+
     def MultiNaiveBayes(self, X_train, X_test, y_train, y_test):
         # Instanciar modelo MultinomialNB
         nb_classifier = MultinomialNB()
@@ -71,6 +125,7 @@ class FeatureExtraction2:
         print(confusion_matrix(y_test, pred))
         return nb_classifier
 
+    @progress_wrapped(estimated_time=100)
     def overSamplingSMOTE(self, X_train, y_train, vectorizer):
         # Define the resampling method
         method = SMOTE(kind='regular')
@@ -83,4 +138,4 @@ class FeatureExtraction2:
         return X_resampled, y_resampled
 
 
-FeatureExtraction2("data_lemmatized.csv", 'data_lemmatized', "sentiment")
+# FeatureExtraction2("data_lemmatized.csv", 'data_lemmatized', "sentiment")

@@ -1,21 +1,22 @@
-# Propósito: Recibir un CSV con Tweets y preprocesarlos (limpiarlos) para su futuro tratamiento 
+# Propósito: Recibir un CSV con Tweets y preprocesarlos (limpiarlos) para su futuro tratamiento
 # con alguna herramienta de Feature Extraction
 # Creado el 18 de octubre de 2019
 # Autor: Alejandro Gibran Pérez Pérez
 
 # Importar de librerías
-import numpy as np
-import pandas as pd
-import nltk
-from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
-from nltk.stem import LancasterStemmer
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem import WordNetLemmatizer
-import re
+from nltk.stem import LancasterStemmer
+from nltk.stem import PorterStemmer
+from nltk.corpus import stopwords
+from tqdm import tqdm
+import pandas as pd
+import numpy as np
+import nltk
 import emoji
 import json
-import seaborn as sns
+import re
+import os
 
 class Preprocesamiento:
     columna_texto             = ""
@@ -26,29 +27,41 @@ class Preprocesamiento:
 
 
     def __init__(self, archivo, columna_texto, columna_sentimiento):
-        # Actualizar diccionarios
-        pd.set_option('display.max_colwidth', -1)
-        nltk.download('stopwords')
-
-        # Guardar argumentos para la instancia
+        self.archivo = archivo
         self.columna_texto = columna_texto
         self.columna_sentimiento = columna_sentimiento
 
-        # Lectura de CSV de Tweets
-        self.tweets_df = pd.read_csv(archivo)
-
-        # Seleccionar la columna con los Tweets
-        self.tweets = self.tweets_df[columna_texto]
+        # Actualizar diccionarios
+        print("Actualizando Diccionario: StopWords")
+        pd.set_option('display.max_colwidth', -1)
+        nltk.download('stopwords')
 
         # Cargar los diccionarios
-        self.diccionario_contracciones = self.json2dict("contractions.json")    # Contracciones
-        self.diccionario_emoticones    = self.json2dict("emoticons.json")       # Emoticones
-        self.diccionario_slang         = self.json2dict("slang.json")           # Slang
+        print("Cargando Diccionarios...")
+        cur_path = os.path.dirname(__file__)
+        _archivo = os.path.join(cur_path, 'DB', 'contractions.json')
+        self.diccionario_contracciones = self.json2dict(
+            _archivo)  # Contracciones
+        _archivo = os.path.join(cur_path, 'DB', 'emoticons.json')
+        self.diccionario_emoticones = self.json2dict(_archivo)  # Emoticones
+        _archivo = os.path.join(cur_path, 'DB', 'slang.json')
+        self.diccionario_slang = self.json2dict(_archivo)  # Slang
+
+    def preparacion(self):
+        print("===PREPROCESAMIENTO INICIADO===")
+
+        # Lectura de CSV
+        self.path('DB')
 
         # Iniciar Limpieza
-        tweets_limpios = self.limpieza()
+        print("Iniciar Limpieza")
+        tweets = self.limpieza(self.tweets)
+        tweets_limpios = pd.DataFrame(
+            dict(clean_text=tweets,
+                 sentiment=self.tweets_df[self.columna_sentimiento]))
 
         # Iniciar lemmatización
+        print("Iniciar Lemmatización")
         lemmatizated_data = self.lemmatization(tweets_limpios["clean_text"])
 
         # Borrar la columna de datos limpios
@@ -61,59 +74,89 @@ class Preprocesamiento:
         tweets_limpios["sentiment"] = tweets_limpios["sentiment"].replace(to_replace=["positive","neutral","negative"], value=[1,0,-1])
 
         # Guardar el Dataframe como un CSV
-        export_csv = tweets_limpios.to_csv (r'data_lemmatized.csv', index = None, header=True)
+        cur_path = os.path.dirname(__file__)
+        print("Guardando Tweets Limpios a CSV...")
+        archivo = os.path.join(cur_path, 'DB', 'data_lemmatized.csv')
+        tweets_limpios.to_csv (archivo, index = None, header=True)
+        print("===PREPROCESAMIENTO TERMINADO===")
+
+    def path(self, carpeta):
+        # Cargando rutas
+        cur_path = os.path.dirname(__file__)
+        _archivo = os.path.join(cur_path, carpeta, self.archivo)
+
+        # Lectura de CSV de Tweets
+        print("Lectura de CSV...")
+        self.tweets_df = pd.read_csv(_archivo)
+
+        # Seleccionar la columna con los Tweets
+        self.tweets = self.tweets_df[self.columna_texto]
 
 
-    def limpieza(self):
+    def limpieza(self, tweets):
         # No URLs
-        self.tweets = self.tweets.str.replace('\w+:\/\/\S+', "")
+        print("No URLs")
+        tweets = tweets.str.replace('\w+:\/\/\S+', "")
+
 
         # No Usertags
-        self.tweets = self.tweets.str.replace('@(\w+)', "")
-        
+        print("No Usertags")
+        tweets = tweets.str.replace('@(\w+)', "")
+
         # No Hashtags
-        self.tweets = self.tweets.str.replace('#(\w+)',"")
+        print("No Hashtags")
+        tweets = tweets.str.replace('#(\w+)',"")
 
         # Convertir contracciones
+        print("Convertir contracciones")
         conjunto_contracciones = set(self.diccionario_contracciones.keys())     # Creando un conjunto de contracciones
-        self.tweets = self.tweets.str.replace("’", "'")                         # Reemplazar apostrofe con comilla simple
-        self.tweets = self.tweets.apply(                                        # Traducir cada registro del dataframe
-            lambda x: self.traducir(x, self.diccionario_contracciones, conjunto_contracciones)) 
+        tweets = tweets.str.replace("’", "'")                         # Reemplazar apostrofe con comilla simple
+        tweets = tweets.apply(                                        # Traducir cada registro del dataframe
+            lambda x: self.traducir(x, self.diccionario_contracciones, conjunto_contracciones))
 
         # Convertir Emoticones
-        conjunto_emoticones = set(self.diccionario_emoticones.keys())           # Creando un conjunto de emoticones            
-        self.tweets = self.tweets.apply(                                        # Traducir cada registro del dataframe
+        print("Convertir Emoticones")
+        conjunto_emoticones = set(self.diccionario_emoticones.keys())           # Creando un conjunto de emoticones
+        tweets = tweets.apply(                                        # Traducir cada registro del dataframe
             lambda x: self.traducir(x, self.diccionario_emoticones, conjunto_emoticones))
-        
+
         # Convertir emojis
-        self.tweets = self.tweets.apply(lambda x: emoji.demojize(x))
-        self.tweets = self.tweets.str.replace(":"," ")
+        print("Convertir emojis")
+        tqdm.pandas(desc="my bar!")
+        tweets = tweets.progress_apply(lambda x: emoji.demojize(x))
+        tweets = tweets.str.replace(":"," ")
 
         # Remover todo menos letras y numeros (y espacios)
-        self.tweets = self.tweets.str.replace('[^0-9a-zA-Z ]+', '')
-        self.tweets = self.tweets.str.replace(" +"," ")                         # Reducir los espacios a solo 1
+        print("Remover todo menos letras y numeros (y espacios)")
+        tweets = tweets.str.replace('[^0-9a-zA-Z ]+', '')
+        tweets = tweets.str.replace(" +"," ")                         # Reducir los espacios a solo 1
 
         # Convertir todo a minúsculas
-        self.tweets = self.tweets.str.lower()
+        print("Convertir todo a minúsculas")
+        tweets = tweets.str.lower()
 
         # Interpretar el slang
-        conjunto_slang = set(self.diccionario_slang.keys())                     # Creando un conjunto de slang            
-        self.tweets = self.tweets.apply(                                        # Traducir cada registro del dataframe
+        print("Interpretar el slang")
+        conjunto_slang = set(self.diccionario_slang.keys())                     # Creando un conjunto de slang
+        tweets = tweets.apply(                                        # Traducir cada registro del dataframe
             lambda x: self.traducir(x, self.diccionario_slang, conjunto_slang))
 
         # Remover todo lo que no sea letras para este punto
-        self.tweets = self.tweets.str.replace('[^a-zA-Z ]+', '')
+        print("Remover todo lo que no sea letras para este punto")
+        tweets = tweets.str.replace('[^a-zA-Z ]+', '')
 
         # Remover carácteres repetidos
-        self.tweets = self.tweets.transform(lambda x: re.sub(r'(.)\1+', r'\1\1', x))
+        print("Remover carácteres repetidos")
+        tweets = tweets.transform(lambda x: re.sub(r'(.)\1+', r'\1\1', x))
 
         # Remover StopWords
+        print("Remover StopWords")
         stop = stopwords.words("english")
         stop_set = set(stop)
-        self.tweets = self.tweets.apply(lambda x: ' '.join([word for word in x.split() if word not in (stop_set)]))
+        tweets = tweets.apply(lambda x: ' '.join([word for word in x.split() if word not in (stop_set)]))
 
         # Unir columna limpia al Dataframe
-        return pd.DataFrame(dict(clean_text = self.tweets , sentiment = self.tweets_df[self.columna_sentimiento]))
+        return tweets
 
 
     # Funcion para traducir palabras de un texto por su respectivo significado
@@ -154,13 +197,16 @@ class Preprocesamiento:
         ls = LancasterStemmer()
         lancaster_stemmer_tokenized = texto.apply(lambda x: self.stemOracion(x, ls))
         return lancaster_stemmer_tokenized
-    
+
 
     # Funcion para Lemmatizar
     def lemmatization(self, texto):
+        print("Actualizando Diccionario: Lemmatizacion")
         nltk.download('wordnet')
         lm = WordNetLemmatizer()
+        print("Lemmatización...")
         data_lemmatized = texto.apply(lambda x: self.stemOracion(x, lm))
+        print("===LEMMATIZACIÓN TERMINADA===")
         return data_lemmatized
 
 
@@ -174,11 +220,11 @@ class Preprocesamiento:
         for word in token_words:
             if lemmatizer:
                 resultado.append(stemmer.lemmatize(word, pos="v"))
-            else: 
+            else:
                 resultado.append(stemmer.stem(word))
         return " ".join(resultado)
 
-   
+
     # Funcion para hacer POS tag
     def posTag(self, texto):
         nltk.download('averaged_perceptron_tagger')

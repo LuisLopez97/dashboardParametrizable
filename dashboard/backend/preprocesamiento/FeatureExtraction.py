@@ -133,10 +133,10 @@ class FeatureExtraction:
         print(filas)
         if filas > 2500:
             self.divisor = int(filas / 2500)
-            intervalos = int(filas / divisor)
+            intervalos = int(filas / self.divisor)
         else:
             intervalos = 1
-        print(divisor)
+        print(self.divisor)
         print(intervalos)
         print("Iniciando el Feature Extraction (pivoteo): ")
         inicio = 0
