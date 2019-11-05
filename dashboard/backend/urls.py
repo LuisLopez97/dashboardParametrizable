@@ -1,6 +1,8 @@
-from django.urls import path
-from . import views
+from rest_framework import routers
+from .api import KeyViewSet
 
-urlpatterns = [
-    path('api/search/', views.SearchListCreate.as_view() ),
-]
+# Creacion de ruta para el backend.
+router = routers.DefaultRouter()
+router.register('api/keywords', KeyViewSet, 'keywords')
+
+urlpatterns = router.urls

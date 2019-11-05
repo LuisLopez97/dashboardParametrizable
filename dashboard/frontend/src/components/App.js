@@ -1,31 +1,45 @@
-import React, { Componnet } from 'react';
+import React, { Componet, Fragment } from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import store from '../store';
+import { HashRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
+
 
 // Componentes
 import Navbar from './navbar'
 import Section1 from './section1'
+import DataTable from './dataTable';
+import Chart from './chart';
 
-// Json
-import data from './sample/tweetsp.json';
+class App extends React.Component {
 
-class App extends React.Component{
-    state = {
-        data:data
-    }
-    render(){
+    render() {
         return (
-            <div className="bg-primary">
-                <div className="container-fluid">
-                    <div className="row bg-dark">
-                        <div className="col-xl-1 lg-2 md-2 sm-1 sticky-top bg-dark">
-                            <Navbar />
-                        </div>
-                        <div className="col-xl-11 lg-10 md-10 sm-11 bg-light">
-                            <Section1 data={this.state.data} />
+            <Provider store={store}>
+                <Fragment >
+                    <div className="bg-primary">
+                        <div className="container-fluid">
+                            <div className="row bg-primary">
+                                <div className="col-lg-1 navbar-dark bg-primary sidebar sidebar-sticky">
+                                    <Navbar />
+                                </div>
+                                <div className="col-lg-11 bg-secondary">
+                                    <Router>
+                                        <Switch>
+                                            <Route exact path="/"
+                                                component={Section1} />
+                                            <Route exact path="/Tweets"
+                                                component={DataTable} />
+                                            <Route exact path="/Charts"
+                                                component={Chart} />
+                                        </Switch>
+                                    </Router>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </Fragment>
+            </Provider>
         )
     }
 }

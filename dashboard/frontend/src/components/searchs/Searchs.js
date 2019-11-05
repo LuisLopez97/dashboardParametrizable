@@ -1,29 +1,30 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react'
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { getSearchs } from '../actions/searchs';
+import { getSearchs, deleteSearchs } from '../../actions/searchs';
 
-class Tabla extends Component {
+export class Searchs extends Component {
     static PropTypes = {
         searchs: PropTypes.array.isRequired,
-        getsearchs: PropTypes.array.isRequired
-    }
+        getSearchs: PropTypes.func.isRequired,
+        deleteSearchs: PropTypes.func.isRequired
+    };
 
     componentDidMount() {
         this.props.getSearchs();
     }
-
     render() {
         return (
-            <div className="table-responsive-md overflow-auto">
-                <table className="table table-hover table-striped table-bordered table-sm">
-                    <thead className="thead-dark">
+            <Fragment>
+                <h2 className="py-5">Tweets</h2>
+                <table className="table table-striped py-5">
+                    <thead>
                         <tr>
                             <th>Sentimiento</th>
-                            <th>Razón del sentimiento</th>
+                            <th>Rason del sentimiento</th>
                             <th>Usuario</th>
                             <th>Texto</th>
-                            <th>Ubicación</th>
+                            <th>Ubicacion</th>
                         </tr>
                     </thead>
                     <tbody className="p-5">
@@ -38,12 +39,13 @@ class Tabla extends Component {
                         ))}
                     </tbody>
                 </table>
-            </div>)
+            </Fragment >
+        )
     }
 }
 
 const mapStateToProps = state => ({
     searchs: state.searchs.searchs
-})
+});
 
-export default connect(mapStateToProps, { getSearchs })(Tabla);
+export default connect(mapStateToProps, { getSearchs, deleteSearchs })(Searchs);
