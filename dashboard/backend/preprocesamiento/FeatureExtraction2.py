@@ -28,7 +28,7 @@ class FeatureExtraction2:
         X_resampled, y_resampled = self.overSamplingSMOTE(X_features_train, y_train, vectorizer)
 
         # Modeling
-        clf = self.MultiNaiveBayes(X_resampled, X_test, y_resampled, y_test)
+        clf = self.MultiNaiveBayes(X_resampled, X_features_test, y_resampled, y_test)
 
     def bagOfWords(self,X_train, X_test):
         # Inicializar al objeto CountVectorizer: count_vectorizer
