@@ -1,5 +1,6 @@
 from Preprocesamiento import Preprocesamiento as preprocesamiento
 from FeatureExtraction2 import FeatureExtraction as fe
+from pathlib import Path, PurePath
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
@@ -15,15 +16,14 @@ class Prediction:
 
     def predecir(self):
         # Definir ruta para lectura de Pickle de clasificador
-        cur_path = os.path.dirname(__file__)
-        clf = self.loadPickle(cur_path, 'Classifiers', self.nombre_clasificador)
+        ruta_actual = PurePath(Path.cwd())
+        clf = self.loadPickle(ruta_actual, 'Classifiers', self.nombre_clasificador)
 
         # Definir ruta para lectura de Pickle de vectorizador
-        cur_path = os.path.dirname(__file__)
-        vectorizer = self.loadPickle(cur_path, 'Vectorizers', self.nombre_vectorizador)
+        vectorizer = self.loadPickle(ruta_actual, 'Vectorizers', self.nombre_vectorizador)
 
         # Leer dataset real
-        dataset = os.path.join(cur_path, 'TestData', self.test_data)
+        dataset = ruta_actual / 'TestData' / self.test_data
         tweets = pd.read_csv(dataset, encoding='ISO-8859-1')
         features = tweets[self.columna_tweets]
 
@@ -48,14 +48,14 @@ class Prediction:
         tweets['sentiment'] = pred
 
         # Guardar a CSV
-        cur_path = os.path.dirname(__file__)
-        print("Guardando prediccion a CSV...")
-        archivo = os.path.join(cur_path, 'TestData', 'Output', 'prediccion.csv')
+        print("Guardando prediccion como CSV...")
+        ruta_actual = PurePath(Path.cwd())                                # Ruta actual
+        archivo = ruta_actual / 'TestData' / 'Output' / 'prediccion.csv'  # Direccion CSV
         tweets.to_csv(archivo, index=None, header=True)
 
         # Guardar como JSON
-        print("Guardando prediccion a JSON...")
-        archivo = os.path.join(cur_path, 'TestData', 'Output','prediccion.json')
+        print("Guardando prediccion como JSON...")
+        archivo = ruta_actual.parent.parent / 'frontend' / 'prediccion.json'  # Direccion JSON
         tweets.to_json(archivo, orient='records', lines=True)
 
     def loadPickle(self, cur_path, carpeta, _pickle):

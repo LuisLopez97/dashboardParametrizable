@@ -8,6 +8,7 @@ from LongFunctionProgress import provide_progress_bar
 from LongFunctionProgress import progress_wrapped
 from imblearn.under_sampling import NearMiss
 from imblearn.over_sampling import SMOTE
+from pathlib import Path, PurePath
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
@@ -41,23 +42,25 @@ class FeatureExtraction:
 
         # Modeling
         print("Modelado: MultinomialNB...")
-        clf = self.MultiNaiveBayes(X_resampled, X_features_test, y_resampled,
-                                   y_test)
+        clf = self.MultiNaiveBayes(X_resampled, X_features_test, y_resampled, y_test)
 
         # Guardando como pickle
         print(f"Guardando pickle: clf...")
         # Training Set
-        cur_path = os.path.dirname(__file__)
-        _archivo = os.path.join(cur_path, 'Classifiers', "MultinomialNB")
+        # Ruta actual
+        ruta_actual = PurePath(Path.cwd())
+        # Direccion Pickle Clasificador
+        _archivo = ruta_actual / 'Classifiers' / 'MultinomialNB'
         with open(_archivo, 'wb') as pickleFile:
             pickle.dump(clf, pickleFile)
         print(f"¡Pickle guardado con éxito!")
         print("=== FEATURE EXTRACTION TERMINADO ===")
 
     def path(self, carpeta):
-        # Cargando rutas
-        cur_path = os.path.dirname(__file__)
-        _archivo = os.path.join(cur_path, carpeta, self.dataset)
+        # Ruta actual
+        ruta_actual = PurePath(Path.cwd())
+        # Direccion Pickle Clasificador
+        _archivo = ruta_actual / carpeta / self.dataset
         # Leer Dataset
         print("Leyendo Dataset...")
         pd.set_option('display.max_colwidth', -1)
@@ -88,8 +91,10 @@ class FeatureExtraction:
         # Guardando como pickle
         print(f"Guardando pickle: vectorizer...")
         # Training Set
-        cur_path = os.path.dirname(__file__)
-        _archivo = os.path.join(cur_path, 'Vectorizers', "CountVectorizer")
+        # Ruta actual
+        ruta_actual = PurePath(Path.cwd())
+        # Direccion Pickle Vectorizador
+        _archivo = ruta_actual / 'Vectorizers' / 'CountVectorizer'
         with open(_archivo, 'wb') as pickleFile:
             pickle.dump(count_vectorizer, pickleFile)
         print(f"¡Pickle guardado con éxito!")

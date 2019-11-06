@@ -4,7 +4,6 @@ from Prediction import Prediction as prediction
 import pandas as pd
 import subprocess
 import sys
-import os
 
 def importarLibrarias():
     subprocess.call([sys.executable, "-m", "pip", "install","-r", "requirements.txt"])

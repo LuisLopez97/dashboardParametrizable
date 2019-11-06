@@ -11,6 +11,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import LancasterStemmer
 from nltk.stem import PorterStemmer
 from nltk.corpus import stopwords
+from pathlib import Path, PurePath
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
@@ -40,14 +41,18 @@ class Preprocesamiento:
 
         # Cargar los diccionarios
         print("Cargando Diccionarios...")
-        cur_path = os.path.dirname(__file__)
-        _archivo = os.path.join(cur_path, 'DB', 'contractions.json')
-        self.diccionario_contracciones = self.json2dict(
-            _archivo)  # Contracciones
-        _archivo = os.path.join(cur_path, 'DB', 'emoticons.json')
-        self.diccionario_emoticones = self.json2dict(_archivo)  # Emoticones
-        _archivo = os.path.join(cur_path, 'DB', 'slang.json')
-        self.diccionario_slang = self.json2dict(_archivo)  # Slang
+        # Ruta actual
+        ruta_actual = PurePath(Path.cwd())
+        # Direccion diccionario contractions.json
+        diccionario = ruta_actual / 'DB' / 'contractions.json'
+        self.diccionario_contracciones = self.json2dict(diccionario)    # Contracciones
+        # Direccion diccionario emoticons.json
+        diccionario = ruta_actual / 'DB' / 'emoticons.json'
+        self.diccionario_emoticones = self.json2dict(diccionario)       # Emoticones
+        # Direccion diccionario emoticons.json
+        diccionario = ruta_actual / 'DB' / 'slang.json'
+        self.diccionario_slang = self.json2dict(diccionario)            # Slang
+        print("Diccionarios cargados exitosamente")
 
     def preparacion(self):
         print("===PREPROCESAMIENTO INICIADO===")
@@ -76,16 +81,21 @@ class Preprocesamiento:
         tweets_limpios["sentiment"] = tweets_limpios["sentiment"].replace(to_replace=["positive","neutral","negative"], value=[1,0,-1])
 
         # Guardar el Dataframe como un CSV
-        cur_path = os.path.dirname(__file__)
         print("Guardando Tweets Limpios a CSV...")
-        archivo = os.path.join(cur_path, 'DB', 'data_lemmatized.csv')
+        # Ruta actual
+        ruta_actual = PurePath(Path.cwd())
+        # Direccion CSV data_lemmatized.csv
+        archivo = ruta_actual / 'DB' / 'data_lemmatized.csv'
         tweets_limpios.to_csv (archivo, index = None, header=True)
         print("===PREPROCESAMIENTO TERMINADO===")
 
     def path(self, carpeta):
+
         # Cargando rutas
-        cur_path = os.path.dirname(__file__)
-        _archivo = os.path.join(cur_path, carpeta, self.archivo)
+        # Ruta actual
+        ruta_actual = PurePath(Path.cwd())
+        # Direccion CSV a preprocesar
+        _archivo = ruta_actual / carpeta / self.archivo
 
         # Lectura de CSV de Tweets
         print("Lectura de CSV...")
@@ -233,4 +243,4 @@ class Preprocesamiento:
         data_POS = texto.apply(lambda x: nltk.pos_tag(nltk.word_tokenize(x)))
         return data_POS
 
-#Preprocesamiento("Tweets_pg_prepared.csv", "text", "airline_sentiment")
+# Preprocesamiento("Tweets_pg_prepared.csv", "text", "airline_sentiment")
