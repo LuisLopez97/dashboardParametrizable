@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import Axios from 'axios';
 import Datatable from 'react-data-table-component';
 
-import Datos from './Data/Datos';
 
 
 class DataTable extends Component {
