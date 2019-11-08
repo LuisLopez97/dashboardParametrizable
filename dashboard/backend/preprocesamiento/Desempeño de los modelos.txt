@@ -5,10 +5,12 @@ Naive Bayes
 Logistic Regression
 	- Bag of Words:		0.75
    - TF-IDF:			   0.46
-SVM
+Support Vector Machines (SVM)
 	- Bag of Words:		????
 	- TF-IDF:			   ????
-
+Stochastic Gradient Descent (SGD)
+Random Forest
+Recurrent Neural Network (RNN)
 
 Naive Bayes
 	- Bag of Words:		0.76
