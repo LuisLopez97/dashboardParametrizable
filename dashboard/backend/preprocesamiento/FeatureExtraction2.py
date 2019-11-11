@@ -4,6 +4,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import SGDClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn import svm
 from sklearn.metrics import confusion_matrix
 from LongFunctionProgress import provide_progress_bar
@@ -59,19 +61,27 @@ class FeatureExtraction:
 
         # Modeling
         print("=== MODELADO INICIADO ===")
-        print("Modelado: MultinomialNB...")
-        NB_clf = self.MultiNaiveBayes(X_resampled, X_features_test, y_resampled, y_test)
+        # print("Modelado: MultinomialNB...")
+        # NB_clf = self.MultiNaiveBayes(X_resampled, X_features_test, y_resampled, y_test)
         
-        print("Modelado: LogisticRegression...")
-        LR_clf = self.LogisticRegression(X_resampled, X_features_test, y_resampled, y_test)
+        # print("Modelado: LogisticRegression...")
+        # LR_clf = self.LogisticRegression(X_resampled, X_features_test, y_resampled, y_test)
 
         # print("Modelado: SVM...")
         # SVM_clf = self.SVM(X_resampled, X_features_test, y_resampled, y_test)
         
+        print("Modelado: Random Forest...")
+        RF_clf = self.RandomForest(X_resampled, X_features_test, y_resampled, y_test)
+
+        print("Modelado: Stochastic Gradient Boost...")
+        SGD_clf = self.SGD(X_resampled, X_features_test, y_resampled, y_test)
+        
         print("=== MODELADO TERMINADO ===")
-        self.crearPickle(NB_clf, 'Classifiers/MultinomialNB')
-        self.crearPickle(LR_clf, 'Classifiers/LogisticRegression')
+        # self.crearPickle(NB_clf, 'Classifiers/MultinomialNB')
+        # self.crearPickle(LR_clf, 'Classifiers/LogisticRegression')
         # self.crearPickle(SVM_clf, 'Classifiers/SVM')
+        self.crearPickle(RF_clf, 'Classifiers/RandomForest')
+        self.crearPickle(SGD_clf, 'Classifiers/SGD')
 
 
 
@@ -148,6 +158,34 @@ class FeatureExtraction:
         print(score)
         print(confusion_matrix(y_test, pred))
         return svm_classifier
+
+    @progress_wrapped(estimated_time=1200)
+    def SGD(self, X_train, X_test, y_train, y_test):
+        # Instanciar modelo SGD
+        sgd_classifier = SGDClassifier(max_iter=1000, tol=1e-3)
+        # Entrenar el modelo
+        sgd_classifier.fit(X_train, y_train)
+        # Predecir con el modelo
+        pred = sgd_classifier.predict(X_test)
+        # Evaluar el modelo
+        score = classification_report(y_test, pred)
+        print(score)
+        print(confusion_matrix(y_test, pred))
+        return sgd_classifier
+
+    def RandomForest(self, X_train, X_test, y_train, y_test):
+        # Instanciar modelo RandomForest
+        rf_classifier = RandomForestClassifier(n_estimators=100, max_depth=2,random_state=0)
+        # Entrenar el modelo
+        rf_classifier.fit(X_train, y_train)
+        # Predecir con el modelo
+        pred = rf_classifier.predict(X_test)
+        # Evaluar el modelo
+        score = classification_report(y_test, pred)
+        print(score)
+        print(confusion_matrix(y_test, pred))
+        return rf_classifier
+
 
     @progress_wrapped(estimated_time=100)
     def overSamplingSMOTE(self, X_train, y_train, vectorizer):

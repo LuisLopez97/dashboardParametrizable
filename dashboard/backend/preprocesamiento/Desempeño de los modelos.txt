@@ -9,7 +9,9 @@ Support Vector Machines (SVM)
 	- Bag of Words:		????
 	- TF-IDF:			   ????
 Stochastic Gradient Descent (SGD)
+
 Random Forest
+
 Recurrent Neural Network (RNN)
 
 Naive Bayes
@@ -29,7 +31,7 @@ Confusion Matrix
  [ 408  511  112]
  [ 165  109  490]]
  
-	- TF-IDF:			0.75
+	- TF-IDF:			   0.75
                precision    recall  f1-score   support
 
           -1       0.83      0.86      0.84      3037
@@ -62,7 +64,7 @@ Confusion Matrix
  [ 415  509  107]
  [ 157  111  496]]
 
-	- TF-IDF:			0.46
+	- TF-IDF:			   0.46
               precision    recall  f1-score   support
 
           -1       0.96      0.29      0.44      3037
@@ -80,4 +82,70 @@ Confusion Matrix
 
 SVM
 	- Bag of Words:		????
-	- TF-IDF:			????
+	- TF-IDF:			   ????
+
+Random Forest
+   - Bag of Words:      0.65
+            precision    recall  f1-score   support
+
+          -1       0.82      0.68      0.75      3037
+           0       0.39      0.64      0.49      1031
+           1       0.63      0.53      0.57       764
+
+    accuracy                           0.65      4832
+   macro avg       0.62      0.62      0.60      4832
+weighted avg       0.70      0.65      0.66      4832
+
+Confusion Matrix
+[[2074  816  147]
+ [ 285  658   88]
+ [ 155  207  402]]
+
+   - TF-IDF:            0.26
+              precision    recall  f1-score   support
+
+          -1       0.82      0.05      0.10      3037
+           0       0.22      0.96      0.36      1031
+           1       0.76      0.12      0.21       764
+
+    accuracy                           0.26      4832
+   macro avg       0.60      0.38      0.22      4832
+weighted avg       0.68      0.26      0.17      4832
+
+Confusion Matrix
+[[ 163 2862   12]
+ [  27  987   17]
+ [   9  661   94]]
+
+SGD
+   - Bag of Words:      0.75
+            precision    recall  f1-score   support
+
+          -1       0.86      0.82      0.84      3037
+           0       0.55      0.59      0.57      1031
+           1       0.65      0.69      0.67       764
+
+    accuracy                           0.75      4832
+   macro avg       0.69      0.70      0.69      4832
+weighted avg       0.76      0.75      0.76      4832
+
+Confusion Matrix
+[[2495  379  163]
+ [ 296  613  122]
+ [ 119  118  527]]
+
+   - TF-IDF:            0.53  
+             precision    recall  f1-score   support
+
+          -1       0.93      0.43      0.59      3037
+           0       0.31      0.91      0.47      1031
+           1       0.77      0.43      0.55       764
+
+    accuracy                           0.53      4832
+   macro avg       0.67      0.59      0.54      4832
+weighted avg       0.77      0.53      0.56      4832
+
+Confusion Matrix
+[[1315 1656   66]
+ [  57  941   33]
+ [  44  393  327]]
