@@ -10,8 +10,8 @@ def importarLibrarias():
 
 
 def entrenar(dataset_entrenamiento, columna_tweets, columna_sentimientos):
-    #prep = preprocesamiento(dataset_entrenamiento, columna_tweets, columna_sentimientos)
-    #prep.preparacion()
+    prep = preprocesamiento(dataset_entrenamiento, columna_tweets, columna_sentimientos)
+    prep.preparacion()
     print("=== ENTRENAMIENTO INICIADO ===")
     fe = feature_extraction("data_lemmatized.csv", 'data_lemmatized', "sentiment")
     fe.extraction('bagofwords')

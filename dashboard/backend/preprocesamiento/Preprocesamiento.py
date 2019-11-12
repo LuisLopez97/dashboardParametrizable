@@ -110,7 +110,6 @@ class Preprocesamiento:
         print("No URLs")
         tweets = tweets.str.replace('\w+:\/\/\S+', "")
 
-
         # No Usertags
         print("No Usertags")
         tweets = tweets.str.replace('@(\w+)', "")
@@ -162,10 +161,10 @@ class Preprocesamiento:
         tweets = tweets.transform(lambda x: re.sub(r'(.)\1+', r'\1\1', x))
 
         # Remover StopWords
-        print("Remover StopWords")
-        stop = stopwords.words("english")
-        stop_set = set(stop)
-        tweets = tweets.apply(lambda x: ' '.join([word for word in x.split() if word not in (stop_set)]))
+        # print("Remover StopWords")
+        # stop = stopwords.words("english")
+        # stop_set = set(stop)
+        # tweets = tweets.apply(lambda x: ' '.join([word for word in x.split() if word not in (stop_set)]))
 
         # Unir columna limpia al Dataframe
         return tweets
