@@ -1,5 +1,5 @@
 from Preprocesamiento import Preprocesamiento as preprocesamiento
-from FeatureExtraction2 import FeatureExtraction as fe
+from FeatureExtraction import FeatureExtraction as fe
 from pathlib import Path, PurePath
 from tqdm import tqdm
 import pandas as pd
