@@ -4,16 +4,20 @@ Naive Bayes
    - TF-IDF:			   0.75
 Logistic Regression
 	- Bag of Words:		0.75
-   - TF-IDF:			   0.46
+   - TF-IDF:			   0.75 
 Support Vector Machines (SVM)
 	- Bag of Words:		????
 	- TF-IDF:			   ????
-Stochastic Gradient Descent (SGD)
-
 Random Forest
+   - Bag of Words:      0.65
+   - TF-IDF:            0.61
+Stochastic Gradient Descent (SGD)
+   - Bag of Words:      0.75
+   - TF-IDF:            0.75
+
 
 Recurrent Neural Network (RNN)
-
+===============================================================
 Naive Bayes
 	- Bag of Words:		0.76
               precision    recall  f1-score   support
@@ -30,7 +34,7 @@ Confusion Matrix
 [[2682  230  125]
  [ 408  511  112]
  [ 165  109  490]]
- 
+------------------------------------------------------- 
 	- TF-IDF:			   0.75
                precision    recall  f1-score   support
 
@@ -46,7 +50,7 @@ Confusion Matrix:
 [[2604  264  169]
  [ 389  490  152]
  [ 136  104  524]]
-
+===============================================================
 Logistic Regression
 	- Bag of Words:		0.75
               precision    recall  f1-score   support
@@ -63,27 +67,28 @@ Confusion Matrix
 [[2687  234  116]
  [ 415  509  107]
  [ 157  111  496]]
-
-	- TF-IDF:			   0.46
+--------------------------------------------------------------
+	- TF-IDF:			    0.75 
               precision    recall  f1-score   support
 
-          -1       0.96      0.29      0.44      3037
-           0       0.29      0.90      0.44      1031
-           1       0.59      0.57      0.58       764
+          -1       0.86      0.81      0.84      3037
+           0       0.55      0.61      0.58      1031
+           1       0.64      0.68      0.66       764
 
-    accuracy                           0.46      4832
-   macro avg       0.62      0.59      0.49      4832
-weighted avg       0.76      0.46      0.46      4832
+    accuracy                           0.75      4832
+   macro avg       0.68      0.70      0.69      4832
+weighted avg       0.76      0.75      0.75      4832
 
 Confusion Matrix
-[[ 866 1956  215]
- [  17  930   84]
- [  15  311  438]]
-
+[[2472  389  176]
+ [ 278  631  122]
+ [ 118  127  519]]
+===============================================================
 SVM
 	- Bag of Words:		????
+-----------------------------   
 	- TF-IDF:			   ????
-
+===============================================================
 Random Forest
    - Bag of Words:      0.65
             precision    recall  f1-score   support
@@ -100,23 +105,23 @@ Confusion Matrix
 [[2074  816  147]
  [ 285  658   88]
  [ 155  207  402]]
-
-   - TF-IDF:            0.26
+--------------------------------------------------------------
+   - TF-IDF:            0.61
               precision    recall  f1-score   support
 
-          -1       0.82      0.05      0.10      3037
-           0       0.22      0.96      0.36      1031
-           1       0.76      0.12      0.21       764
+          -1       0.82      0.69      0.75      3037
+           0       0.36      0.63      0.46      1031
+           1       0.43      0.27      0.33       764
 
-    accuracy                           0.26      4832
-   macro avg       0.60      0.38      0.22      4832
-weighted avg       0.68      0.26      0.17      4832
+    accuracy                           0.61      4832
+   macro avg       0.54      0.53      0.51      4832
+weighted avg       0.66      0.61      0.62      4832
 
-Confusion Matrix
-[[ 163 2862   12]
- [  27  987   17]
- [   9  661   94]]
+[[2103  757  177]
+ [ 284  645  102]
+ [ 171  384  209]]
 
+===============================================================
 SGD
    - Bag of Words:      0.75
             precision    recall  f1-score   support
@@ -133,19 +138,20 @@ Confusion Matrix
 [[2495  379  163]
  [ 296  613  122]
  [ 119  118  527]]
+--------------------------------------------------------------
+   - TF-IDF:            0.75  
+              precision    recall  f1-score   support
 
-   - TF-IDF:            0.53  
-             precision    recall  f1-score   support
+          -1       0.85      0.82      0.84      3037
+           0       0.55      0.59      0.57      1031
+           1       0.66      0.68      0.67       764
 
-          -1       0.93      0.43      0.59      3037
-           0       0.31      0.91      0.47      1031
-           1       0.77      0.43      0.55       764
-
-    accuracy                           0.53      4832
-   macro avg       0.67      0.59      0.54      4832
-weighted avg       0.77      0.53      0.56      4832
+    accuracy                           0.75      4832
+   macro avg       0.69      0.70      0.69      4832
+weighted avg       0.76      0.75      0.75      4832
 
 Confusion Matrix
-[[1315 1656   66]
- [  57  941   33]
- [  44  393  327]]
+[[2501  385  151]
+ [ 303  613  115]
+ [ 123  124  517]]
+ ===============================================================

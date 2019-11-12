@@ -1,3 +1,2 @@
 node_modules
-dashboard/backend/preprocesamiento/DB/X_resampled
-dashboard/backend/preprocesamiento/DB/y_resampled
+dashboard/backend/preprocesamiento/DB/Resampling_SMOTE/

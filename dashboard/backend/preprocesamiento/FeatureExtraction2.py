@@ -6,7 +6,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import SGDClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn import svm
+from sklearn.svm import SVC
 from sklearn.metrics import confusion_matrix
 from LongFunctionProgress import provide_progress_bar
 from LongFunctionProgress import progress_wrapped
@@ -14,6 +14,7 @@ from imblearn.under_sampling import NearMiss
 from imblearn.over_sampling import SMOTE
 from pathlib import Path, PurePath
 from tqdm import tqdm
+from time import time
 import pandas as pd
 import numpy as np
 import os
@@ -49,45 +50,44 @@ class FeatureExtraction:
 
         # Upsamping SMOTE
         print("Upsamping SMOTE...")
-        X_resampled_path = Path(self.ruta_actual / "DB/X_resampled")
-        y_resampled_path = Path(self.ruta_actual / "DB/y_resampled")
+        X_resampled_path = Path(self.ruta_actual / ("DB/Resampling_SMOTE/X_resampled_" + extractor))
+        y_resampled_path = Path(self.ruta_actual / ("DB/Resampling_SMOTE/y_resampled_" + extractor))
         if(X_resampled_path.exists() and y_resampled_path.exists()):
-             X_resampled = self.loadPickle("DB/X_resampled")
-             y_resampled = self.loadPickle("DB/y_resampled")
+            X_resampled = self.loadPickle("DB/Resampling_SMOTE/X_resampled_" + extractor)
+            y_resampled = self.loadPickle("DB/Resampling_SMOTE/y_resampled_" + extractor)
         else:
             X_resampled, y_resampled = self.overSamplingSMOTE(
-                X_features_train, y_train, vectorizer)
+                X_features_train, y_train, vectorizer, extractor)
         print("=== FEATURE EXTRACTION TERMINADO ===")
 
         # Modeling
         print("=== MODELADO INICIADO ===")
-        # print("Modelado: MultinomialNB...")
-        # NB_clf = self.MultiNaiveBayes(X_resampled, X_features_test, y_resampled, y_test)
-        
-        # print("Modelado: LogisticRegression...")
-        # LR_clf = self.LogisticRegression(X_resampled, X_features_test, y_resampled, y_test)
+        print("Modelado: MultinomialNB...")
+        NB_clf = self.MultiNaiveBayes(X_resampled, X_features_test, y_resampled, y_test)
+
+        print("Modelado: LogisticRegression...")
+        LR_clf = self.LogisticRegression(X_resampled, X_features_test, y_resampled, y_test)
 
         # print("Modelado: SVM...")
         # SVM_clf = self.SVM(X_resampled, X_features_test, y_resampled, y_test)
-        
+
         print("Modelado: Random Forest...")
         RF_clf = self.RandomForest(X_resampled, X_features_test, y_resampled, y_test)
 
         print("Modelado: Stochastic Gradient Boost...")
         SGD_clf = self.SGD(X_resampled, X_features_test, y_resampled, y_test)
-        
+
         print("=== MODELADO TERMINADO ===")
-        # self.crearPickle(NB_clf, 'Classifiers/MultinomialNB')
-        # self.crearPickle(LR_clf, 'Classifiers/LogisticRegression')
+        self.crearPickle(NB_clf, 'Classifiers/MultinomialNB')
+        self.crearPickle(LR_clf, 'Classifiers/LogisticRegression')
         # self.crearPickle(SVM_clf, 'Classifiers/SVM')
         self.crearPickle(RF_clf, 'Classifiers/RandomForest')
         self.crearPickle(SGD_clf, 'Classifiers/SGD')
 
 
-
     def bagOfWords(self,X_train, X_test):
         # Inicializar al objeto CountVectorizer: count_vectorizer
-        count_vectorizer = CountVectorizer(stop_words='english')
+        count_vectorizer = CountVectorizer()
         # Conjunto de Entrenamiento
         count_train = count_vectorizer.fit_transform(X_train.values.astype('U'))
         # Conjunto de pruebas
@@ -102,7 +102,7 @@ class FeatureExtraction:
 
     def TfidfVectorizer(self, X_train, X_test):
         # Inicializar al objeto TfidfVectorizer: tfidf_vectorizer
-        tfidf_vectorizer = TfidfVectorizer(stop_words="english", max_df=0.7)
+        tfidf_vectorizer = TfidfVectorizer()
 
         # Transformar los datos de entrenamiento: tfidf_train
         tfidf_train = tfidf_vectorizer.fit_transform(X_train.values.astype('U'))
@@ -119,11 +119,30 @@ class FeatureExtraction:
         self.crearPickle(tfidf_vectorizer, 'Vectorizers/TfidfVectorizer')
         return tfidf_train, tfidf_test, tfidf_vectorizer
 
+    @progress_wrapped(estimated_time=100)
+    def overSamplingSMOTE(self, X_train, y_train, vectorizer, extractor):
+        # Define the resampling method
+        method = SMOTE(kind='regular')
+        # Convertir X_train (Spacy Matrix a DataFrame)
+        X_df = pd.DataFrame(
+            X_train.A, columns=vectorizer.get_feature_names())
+        # Create the resampled feature set
+        X_resampled, y_resampled = method.fit_sample(X_df.to_numpy(), y_train.to_numpy())
+        print(pd.value_counts(pd.Series(y_resampled)))
+        # Guardar en Pickles
+        self.crearPickle(X_resampled, "DB/Resampling_SMOTE/X_resampled_" + extractor)
+        self.crearPickle(y_resampled, "DB/Resampling_SMOTE/y_resampled_" + extractor)
+        return X_resampled, y_resampled
+
     def MultiNaiveBayes(self, X_train, X_test, y_train, y_test):
         # Instanciar modelo MultinomialNB
         nb_classifier = MultinomialNB()
+        # Medicion del tiempo de entrenamiento
+        t0 = time()
         # Entrenar el modelo
         nb_classifier.fit(X_train, y_train)
+        # Impresion del tiempo de entrenamiento
+        print("training time", round(time() - t0, 3), "s")
         # Predecir con el modelo
         pred = nb_classifier.predict(X_test)
         # Evaluar el modelo
@@ -131,12 +150,16 @@ class FeatureExtraction:
         print(score)
         print(confusion_matrix(y_test, pred))
         return nb_classifier
-    
+
     def LogisticRegression(self, X_train, X_test, y_train, y_test):
         # Instanciar modelo LogisticRegression
         lr_classifier = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial')
+        # Medicion del tiempo de entrenamiento
+        t0 = time()
         # Entrenar el modelo
         lr_classifier.fit(X_train, y_train)
+        # Impresion del tiempo de entrenamiento
+        print("training time", round(time() - t0, 3), "s")
         # Predecir con el modelo
         pred = lr_classifier.predict(X_test)
         # Evaluar el modelo
@@ -145,12 +168,15 @@ class FeatureExtraction:
         print(confusion_matrix(y_test, pred))
         return lr_classifier
 
-    @progress_wrapped(estimated_time=1200)
     def SVM(self, X_train, X_test, y_train, y_test):
         # Instanciar modelo SVC
-        svm_classifier = svm.SVC(gamma='scale')
+        svm_classifier = SVC(kernel='linear')
+        # Medicion del tiempo de entrenamiento
+        t0 = time()
         # Entrenar el modelo
         svm_classifier.fit(X_train, y_train)
+        # Impresion del tiempo de entrenamiento
+        print("training time", round(time() - t0, 3), "s")
         # Predecir con el modelo
         pred = svm_classifier.predict(X_test)
         # Evaluar el modelo
@@ -159,12 +185,15 @@ class FeatureExtraction:
         print(confusion_matrix(y_test, pred))
         return svm_classifier
 
-    @progress_wrapped(estimated_time=1200)
     def SGD(self, X_train, X_test, y_train, y_test):
         # Instanciar modelo SGD
         sgd_classifier = SGDClassifier(max_iter=1000, tol=1e-3)
+        # Medicion del tiempo de entrenamiento
+        t0 = time()
         # Entrenar el modelo
         sgd_classifier.fit(X_train, y_train)
+        # Impresion del tiempo de entrenamiento
+        print("training time", round(time() - t0, 3), "s")
         # Predecir con el modelo
         pred = sgd_classifier.predict(X_test)
         # Evaluar el modelo
@@ -176,8 +205,12 @@ class FeatureExtraction:
     def RandomForest(self, X_train, X_test, y_train, y_test):
         # Instanciar modelo RandomForest
         rf_classifier = RandomForestClassifier(n_estimators=100, max_depth=2,random_state=0)
+        # Medicion del tiempo de entrenamiento
+        t0 = time()
         # Entrenar el modelo
         rf_classifier.fit(X_train, y_train)
+        # Impresion del tiempo de entrenamiento
+        print("training time", round(time() - t0, 3), "s")
         # Predecir con el modelo
         pred = rf_classifier.predict(X_test)
         # Evaluar el modelo
@@ -187,21 +220,6 @@ class FeatureExtraction:
         return rf_classifier
 
 
-    @progress_wrapped(estimated_time=100)
-    def overSamplingSMOTE(self, X_train, y_train, vectorizer):
-        # Define the resampling method
-        method = SMOTE(kind='regular')
-        # Convertir X_train (Spacy Matrix a DataFrame)
-        X_df = pd.DataFrame(
-            X_train.A, columns=vectorizer.get_feature_names())
-        # Create the resampled feature set
-        X_resampled, y_resampled = method.fit_sample(X_df.to_numpy(), y_train.to_numpy())
-        print(pd.value_counts(pd.Series(y_resampled)))
-        # Guardar en Pickles
-        self.crearPickle(X_resampled, "DB/X_resampled")
-        self.crearPickle(y_resampled, "DB/y_resampled")
-        return X_resampled, y_resampled
-        
     def path(self, carpeta):
         # Direccion Pickle Clasificador
         _archivo = self.ruta_actual / carpeta / self.dataset
