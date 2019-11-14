@@ -13,18 +13,18 @@ def instalarLibrarias():
 
 def entrenar(dataset_entrenamiento, columna_tweets, columna_sentimientos):
     # Inicializando clase preprocesamiento
-    prep = preprocesamiento(dataset_entrenamiento, columna_tweets, columna_sentimientos)
+    # prep = preprocesamiento(dataset_entrenamiento, columna_tweets, columna_sentimientos)
     # Iniciando Contador de tiempo para preparacion
-    t0 = time()
+    # t0 = time()
     # Ejecutando la preparación de los datos
-    prep.preparacion()
+    # prep.preparacion()
     # Imprimir el tiempo de ejecución
-    print("TIEMPO PREPARACION DATOS: ", round(time() - t0, 3), "s")
+    # print("TIEMPO PREPARACION DATOS: ", round(time() - t0, 3), "s")
     # Iniciando Contador de tiempo
     t0 = time()
     print("=== ENTRENAMIENTO INICIADO ===")
     # Inicializando la clase feature_extraction
-    fe = feature_extraction("data_lemmatized.csv", 'data_lemmatized', "sentiment")
+    fe = feature_extraction("data_lemmatized_es.csv", 'data_lemmatized', "sentiment")
     # Ejecutando la extracción, indicandole el tipo de extraccion
     fe.extraction('bagofwords')
     print("=== ENTRENAMIENTO TERMINADO EXITOSAMENTE ===")
