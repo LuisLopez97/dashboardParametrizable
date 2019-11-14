@@ -1,5 +1,5 @@
 import AnalisisSentimientos as sentimiento
 
 # sentimiento.instalarLibrarias()
-sentimiento.entrenar("Tweets_pg_prepared.csv", "text", "airline_sentiment")
+sentimiento.entrenar("tweets_es.csv", "content", "sentiment", "es")
 # sentimiento.predecir("test.csv", "SentimentText")

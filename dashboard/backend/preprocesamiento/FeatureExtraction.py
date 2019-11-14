@@ -22,19 +22,24 @@ import pickle
 
 
 class FeatureExtraction:
-    def __init__(self, dataset,columna_tweets, columna_sentimiento):
+    def __init__(self, dataset,columna_tweets, columna_sentimiento, idioma):
         self.dataset = dataset
         self.columna_tweets = columna_tweets
         self.columna_sentimiento = columna_sentimiento
+        self.idioma = idioma
         self.ruta_actual = PurePath(Path.cwd())
 
     def extraction(self, extractor):
         print("=== FEATURE EXTRACTION INICIADO ===")
         # Cargando rutas y lectura dataset
-        x, y = self.path('DB')
 
         # Dividir conjuntos (Entrenamiento y pruebas)
-        X_train, X_test, y_train, y_test = self.split(x, y)
+        if self.idioma == "es":
+            X_train, y_train = self.path('DB', self.dataset)
+            X_test, y_test = self.path('DB', 'tweets_es_development.csv')
+        else:
+            x, y = self.path('DB', self.dataset)
+            X_train, X_test, y_train, y_test = self.split(x, y)
 
         # Feature Extraction
         if extractor == 'bagofwords':
@@ -220,9 +225,9 @@ class FeatureExtraction:
         return rf_classifier
 
 
-    def path(self, carpeta):
+    def path(self, carpeta, dataset):
         # Direccion Pickle Clasificador
-        _archivo = self.ruta_actual / carpeta / self.dataset
+        _archivo = self.ruta_actual / carpeta / dataset
         # Leer Dataset
         print("Leyendo Dataset...")
         pd.set_option('display.max_colwidth', -1)
