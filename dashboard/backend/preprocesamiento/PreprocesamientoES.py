@@ -57,6 +57,12 @@ class Preprocesamiento:
             dict(clean_text=tweets,
                  sentiment=self.tweets_df[self.columna_sentimiento]))
 
+        # Seleccionando solo los Tweets con valor Positivo, Negativo y Neutro
+        tweets_limpios = tweets_limpios.loc[tweets_limpios['sentiment'] != "NONE"]
+
+        # Sustitur los valores de la columna de sentimientos por 1, 0 , -1
+        tweets_limpios["sentiment"] = tweets_limpios["sentiment"].replace(to_replace=["P", "NEU", "N"], value=[1, 0, -1])
+
         # Iniciar lemmatización
         print("Iniciar Lemmatización")
         lemmatizated_data = self.lemmatizacion(tweets_limpios["clean_text"])
@@ -67,19 +73,13 @@ class Preprocesamiento:
         # Añadir columna de datos lemmatizados
         tweets_limpios.insert(0, 'data_lemmatized', lemmatizated_data)
 
-        # Seleccionando solo los Tweets con valor Positivo, Negativo y Neutro
-        tweets_preparados = tweets_limpios.loc[tweets_limpios['sentiment'] != "NONE"]
-
-        # Sustitur los valores de la columna de sentimientos por 1, 0 , -1
-        tweets_preparados["sentiment"] = tweets_preparados["sentiment"].replace(to_replace=["P", "NEU", "N"], value=[1, 0, -1])
-
         # Guardar el Dataframe como un CSV
         print("Guardando Tweets Limpios a CSV...")
         # Ruta actual
         ruta_actual = PurePath(Path.cwd())
         # Direccion CSV data_lemmatized.csv
         archivo = ruta_actual / 'DB' / 'data_lemmatized_es.csv'
-        tweets_preparados.to_csv(archivo, index=None, header=True)
+        tweets_limpios.to_csv(archivo, index=None, header=True)
         print("===PREPROCESAMIENTO TERMINADO===")
 
     def limpieza(self, tweets):
