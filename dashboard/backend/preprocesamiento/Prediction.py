@@ -35,6 +35,12 @@ class Prediction:
         print("Iniciar Lemmatización")
         lemmatizated_data = prep.lemmatization(tweets_limpios)
 
+        # Guardar preprocesamiento para el WordCloud
+        print("Guardando preprocesamiento para el WordCloud")
+        pred_lemmatized = pd.DataFrame({'data_lemmatized': lemmatizated_data})
+        archivo = ruta_actual / 'TestData' / 'Output' / 'prediccion_wordcloud.csv'
+        pred_lemmatized.to_csv(archivo, index=None, header=True)
+
         # Feature Extraction: Bag of Words
         print("Feature Extraction: Bag of Words")
         count_test = vectorizer.transform(lemmatizated_data.values.astype('U'))
@@ -44,11 +50,11 @@ class Prediction:
         pred = clf.predict(count_test)
 
         # Unir prediccion al Dataframe
-        # tweets.insert(0, 'sentiment', pred)
-        tweets['sentiment'] = pred
+        # tweets.insert(0, 'Sentiment', pred)
+        tweets['Sentiment'] = pred
         
         # Convertir numeros a palabras
-        tweets["sentiment"] = tweets["sentiment"].replace(
+        tweets["Sentiment"] = tweets["Sentiment"].replace(
             to_replace=[1, 0, -1], value=["positivo", "neutral", "negativo"])
         
         # Guardar a CSV
