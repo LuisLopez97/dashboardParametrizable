@@ -45,7 +45,7 @@ class Preprocesamiento:
 
         # Lectura de CSV de Tweets
         print("Lectura de CSV...")
-        self.tweets_df = pd.read_csv(_archivo)
+        self.tweets_df = pd.read_csv(_archivo, encoding='ISO-8859-1')
 
         # Seleccionar la columna con los Tweets
         self.tweets = self.tweets_df[self.columna_texto]

@@ -37,9 +37,12 @@ class FeatureExtraction:
         if self.idioma == "es":
             X_train, y_train = self.path('DB', self.dataset)
             X_test, y_test = self.path('DB', 'tweets_es_development.csv')
-        else:
+        elif self.idioma == "en":
             x, y = self.path('DB', self.dataset)
             X_train, X_test, y_train, y_test = self.split(x, y)
+        else: 
+            print("Idioma no reconocido. Terminando.")
+            return
 
         # Feature Extraction
         if extractor == 'bagofwords':
@@ -55,11 +58,19 @@ class FeatureExtraction:
 
         # Upsamping SMOTE
         print("Upsamping SMOTE...")
-        X_resampled_path = Path(self.ruta_actual / ("DB/Resampling_SMOTE/X_resampled_" + extractor))
-        y_resampled_path = Path(self.ruta_actual / ("DB/Resampling_SMOTE/y_resampled_" + extractor))
+        print(X_features_train.shape[0])
+        if X_features_train.shape[0] > 20000 and y_train.shape[0] > 20000:
+            print("Muestra mayor a 20,000 registros. Reduciendo a la mitad...")
+            X_features_train = X_features_train[:(X_features_train.shape[0]//2)]
+            y_train = y_train[:y_train.shape[0]//2]
+            print(X_features_train.shape[0])
+            print(y_train.shape[0])
+
+        X_resampled_path = Path(self.ruta_actual / ("DB/Resampling_SMOTE/X_resampled_" + extractor+"_"+self.idioma))
+        y_resampled_path = Path(self.ruta_actual / ("DB/Resampling_SMOTE/y_resampled_" + extractor+"_"+self.idioma))
         if(X_resampled_path.exists() and y_resampled_path.exists()):
-            X_resampled = self.loadPickle("DB/Resampling_SMOTE/X_resampled_" + extractor)
-            y_resampled = self.loadPickle("DB/Resampling_SMOTE/y_resampled_" + extractor)
+            X_resampled = self.loadPickle("DB/Resampling_SMOTE/X_resampled_" + extractor+"_"+self.idioma)
+            y_resampled = self.loadPickle("DB/Resampling_SMOTE/y_resampled_" + extractor+"_"+self.idioma)
         else:
             X_resampled, y_resampled = self.overSamplingSMOTE(
                 X_features_train, y_train, vectorizer, extractor)
@@ -83,11 +94,12 @@ class FeatureExtraction:
         SGD_clf = self.SGD(X_resampled, X_features_test, y_resampled, y_test)
 
         print("=== MODELADO TERMINADO ===")
-        self.crearPickle(NB_clf, 'Classifiers/MultinomialNB')
-        self.crearPickle(LR_clf, 'Classifiers/LogisticRegression')
-        # self.crearPickle(SVM_clf, 'Classifiers/SVM')
-        self.crearPickle(RF_clf, 'Classifiers/RandomForest')
-        self.crearPickle(SGD_clf, 'Classifiers/SGD')
+        self.crearPickle(NB_clf, 'Classifiers/MultinomialNB_' + self.idioma)
+        self.crearPickle(
+            LR_clf, 'Classifiers/LogisticRegression_' + self.idioma)
+        # self.crearPickle(SVM_clf, 'Classifiers/SVM_'+ self.idioma)
+        self.crearPickle(RF_clf, 'Classifiers/RandomForest_' + self.idioma)
+        self.crearPickle(SGD_clf, 'Classifiers/SGD_' + self.idioma)
 
 
     def bagOfWords(self,X_train, X_test):
@@ -100,9 +112,8 @@ class FeatureExtraction:
         #print(count_vectorizer.get_feature_names()[:30])
         count_df = pd.DataFrame(count_train.A, columns=count_vectorizer.get_feature_names())
         print(count_df.head())
-
         # Guardando como pickle
-        self.crearPickle(count_vectorizer, 'Vectorizers/CountVectorizer')
+        self.crearPickle(count_vectorizer, 'Vectorizers/CountVectorizer_'+ self.idioma)
         return count_train, count_test, count_vectorizer
 
     def TfidfVectorizer(self, X_train, X_test):
@@ -121,7 +132,7 @@ class FeatureExtraction:
         print(tfidf_df.head())
 
         # Guardando como pickle
-        self.crearPickle(tfidf_vectorizer, 'Vectorizers/TfidfVectorizer')
+        self.crearPickle(tfidf_vectorizer, 'Vectorizers/TfidfVectorizer' + self.idioma)
         return tfidf_train, tfidf_test, tfidf_vectorizer
 
     @progress_wrapped(estimated_time=100)
@@ -135,8 +146,8 @@ class FeatureExtraction:
         X_resampled, y_resampled = method.fit_sample(X_df.to_numpy(), y_train.to_numpy())
         print(pd.value_counts(pd.Series(y_resampled)))
         # Guardar en Pickles
-        self.crearPickle(X_resampled, "DB/Resampling_SMOTE/X_resampled_" + extractor)
-        self.crearPickle(y_resampled, "DB/Resampling_SMOTE/y_resampled_" + extractor)
+        self.crearPickle(X_resampled, "DB/Resampling_SMOTE/X_resampled_" + extractor + "_" + self.idioma)
+        self.crearPickle(y_resampled, "DB/Resampling_SMOTE/y_resampled_" + extractor + "_" + self.idioma)
         return X_resampled, y_resampled
 
     def MultiNaiveBayes(self, X_train, X_test, y_train, y_test):
@@ -229,9 +240,9 @@ class FeatureExtraction:
         # Direccion Pickle Clasificador
         _archivo = self.ruta_actual / carpeta / dataset
         # Leer Dataset
-        print("Leyendo Dataset...")
+        print(f"Leyendo Dataset {dataset}...")
         pd.set_option('display.max_colwidth', -1)
-        tweets = pd.read_csv(_archivo)
+        tweets = pd.read_csv(_archivo, encoding='ISO-8859-1')
         x = tweets[self.columna_tweets]
         y = tweets[self.columna_sentimiento]
         return x, y

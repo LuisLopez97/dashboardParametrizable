@@ -40,13 +40,17 @@ class Prediction:
         count_test = vectorizer.transform(lemmatizated_data.values.astype('U'))
 
         # Prediccion
-        print("Prediccion con Multinomial Naive Bayes")
+        print("Prediccion con " + self.nombre_clasificador + " y vectorizador " + self.nombre_vectorizador)
         pred = clf.predict(count_test)
 
         # Unir prediccion al Dataframe
         # tweets.insert(0, 'sentiment', pred)
         tweets['sentiment'] = pred
-
+        
+        # Convertir numeros a palabras
+        tweets["sentiment"] = tweets["sentiment"].replace(
+            to_replace=[1, 0, -1], value=["positivo", "neutral", "negativo"])
+        
         # Guardar a CSV
         print("Guardando prediccion como CSV...")
         ruta_actual = PurePath(Path.cwd())                                # Ruta actual
@@ -55,7 +59,8 @@ class Prediction:
 
         # Guardar como JSON
         print("Guardando prediccion como JSON...")
-        archivo = ruta_actual.parent.parent / 'frontend' / 'prediccion.json'  # Direccion JSON
+        # archivo = ruta_actual.parent.parent / 'frontend' / 'prediccion.json'  # Direccion JSON
+        archivo = ruta_actual / 'TestData' / 'Output' / 'prediccion.json'        # Direccion CSV
         tweets.to_json(archivo, orient='records', lines=True)
 
     def loadPickle(self, cur_path, carpeta, _pickle):
