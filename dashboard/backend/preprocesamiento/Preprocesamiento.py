@@ -37,7 +37,7 @@ class Preprocesamiento:
         # Actualizar diccionarios
         print("Actualizando Diccionario: StopWords")
         pd.set_option('display.max_colwidth', -1)
-        nltk.download('stopwords')
+        # nltk.download('stopwords')
 
         # Cargar los diccionarios
         print("Cargando Diccionarios...")
@@ -213,7 +213,7 @@ class Preprocesamiento:
     # Funcion para Lemmatizar
     def lemmatization(self, texto):
         print("Actualizando Diccionario: Lemmatizacion")
-        nltk.download('wordnet')
+        # nltk.download('wordnet')
         lm = WordNetLemmatizer()
         print("Lemmatización...")
         data_lemmatized = texto.apply(lambda x: self.stemOracion(x, lm))
