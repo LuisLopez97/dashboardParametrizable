@@ -34,9 +34,9 @@ class Preprocesamiento:
         self.columna_texto = columna_texto
         self.columna_sentimiento = columna_sentimiento
 
-        # Actualizar diccionarios
-        print("Actualizando Diccionario: StopWords")
         pd.set_option('display.max_colwidth', -1)
+        # Actualizar diccionarios
+        # print("Actualizando Diccionario: StopWords")
         # nltk.download('stopwords')
 
         # Cargar los diccionarios

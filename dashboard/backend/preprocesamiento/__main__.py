@@ -1,5 +1,5 @@
 import AnalisisSentimientos as sentimiento
-palabra = "pokemon"
+palabra = "fortnite"
 # sentimiento.instalarLibrarias()
 """ extraccion(idioma, palabra, tiempo_segundos) """
 # sentimiento.extraccion("en", palabra , 60*10)

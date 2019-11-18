@@ -4,8 +4,10 @@ from PreprocesamientoES import Preprocesamiento as preprocesamiento_es
 from FeatureExtraction import FeatureExtraction as feature_extraction
 from Prediction import Prediction as prediction
 from pathlib import Path, PurePath
-from wordcloud import WordCloud
+from wordcloud import WordCloud, STOPWORDS
+from PIL import Image
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import subprocess
 import sys
@@ -101,15 +103,23 @@ def wordcloud(nombre_wordcloud, color_fondo):
     pred_pos = pred_wordcloud_df[pred_df['Sentiment'] == 'positivo']
     pred_neg = pred_wordcloud_df[pred_df['Sentiment'] == 'negativo']
     pred_neu = pred_wordcloud_df[pred_df['Sentiment'] == 'neutral']
+    
+    # Mascara
+    carpeta = Path(ruta_actual / 'DB' / 'img')
+    cloud_mask = np.array(Image.open( carpeta / "cloud.png"))
+    comment_mask = np.array(Image.open( carpeta / "comment.png"))
+    upvote_mask = np.array(Image.open( carpeta / "upvote.png"))
+    downvote_mask = np.array(Image.open( carpeta / "downvote.png"))
+    
 
     # Creando WordClouds
-    def crearWordCloud(dataframe, sentimiento):
+    def crearWordCloud(dataframe, sentimiento, mask):
         # Unificar todos los textos de todas las columnas del dataframe en uno
         text = dataframe.data_lemmatized.values
         # Creando el WordCloud General
         print("Creando el WordCloud ", sentimiento)
         wordcloud = WordCloud(
-            width=1024, height=720, background_color=color_fondo, collocations=False).generate(str(text))
+            width=1024, height=720, background_color=color_fondo, collocations=False, mask=mask, stopwords=STOPWORDS).generate(str(text))
         print("Guardando WordCloud: wordcloud_" + nombre_wordcloud + ".png")
         # Creando carpeta de WordCloud especifico
         carpeta = Path(ruta_actual / 'TestData' / 'Output' / 'WordCloud' / nombre_wordcloud)
@@ -122,9 +132,9 @@ def wordcloud(nombre_wordcloud, color_fondo):
             "wordcloud_" + nombre_wordcloud + "_" + sentimiento + "_" + color_fondo + ".png"))
         wordcloud.to_file(archivo)
 
-    crearWordCloud(pred_wordcloud_df, "general")
-    crearWordCloud(pred_pos, "positivo")
-    crearWordCloud(pred_neg, "negativo")
-    crearWordCloud(pred_neu, "neutral")
+    crearWordCloud(pred_wordcloud_df, "general", cloud_mask)
+    crearWordCloud(pred_pos, "positivo", upvote_mask)
+    crearWordCloud(pred_neg, "negativo", downvote_mask)
+    crearWordCloud(pred_neu, "neutral", comment_mask)
 
     
