@@ -6,6 +6,7 @@ from FeatureExtraction import FeatureExtraction as feature_extraction
 from Prediction import Prediction as prediction
 from pathlib import Path, PurePath
 from wordcloud import WordCloud, STOPWORDS
+from nltk.corpus import stopwords
 from PIL import Image
 import datetime as dt
 import matplotlib.pyplot as plt
@@ -99,7 +100,7 @@ def predecir(dataset, columna_tweets, idioma):
     # Imprimir el tiempo de ejecución
     print("TIEMPO PREDICCIÓN: ", round(time() - t0, 3), "s")
 
-def wordcloud(nombre_wordcloud, color_fondo):
+def wordcloud(nombre_wordcloud, color_fondo, idioma):
     print("=== WORDCLOUD INICIADO ===")
     # Definir ruta actual
     ruta_actual = PurePath(Path.cwd())
@@ -130,13 +131,23 @@ def wordcloud(nombre_wordcloud, color_fondo):
     
 
     # Creando WordClouds
-    def crearWordCloud(dataframe, sentimiento, mask):
+    def crearWordCloud(dataframe, sentimiento, mask, idioma):
         # Unificar todos los textos de todas las columnas del dataframe en uno
         text = dataframe.data_lemmatized.values
         # Creando el WordCloud General
         print("Creando el WordCloud ", sentimiento)
-        wordcloud = WordCloud(
-            width=1024, height=720, background_color=color_fondo, collocations=False, mask=mask, stopwords=STOPWORDS).generate(str(text))
+        if idioma == 'es':
+            stop = stopwords.words("spanish")
+            stop_set = set(stop)
+            stop_set.discard('no')
+            wordcloud = WordCloud(
+                width=1024, height=720, background_color=color_fondo, collocations=False, mask=mask, stopwords=stop_set).generate(str(text))
+        elif idioma == 'en':
+            wordcloud = WordCloud(
+                width=1024, height=720, background_color=color_fondo, collocations=False, mask=mask, stopwords=STOPWORDS).generate(str(text))
+        else: 
+            print("Idioma no reconocido: "+ idioma + ". Terminando")
+            return
         print("Guardando WordCloud: wordcloud_" + nombre_wordcloud + ".png")
         # Creando carpeta de WordCloud especifico
         carpeta = Path(ruta_actual / 'TestData' / 'Output' / 'WordCloud' / nombre_wordcloud)
@@ -149,9 +160,9 @@ def wordcloud(nombre_wordcloud, color_fondo):
             "wordcloud_" + nombre_wordcloud + "_" + sentimiento + "_" + color_fondo + ".png"))
         wordcloud.to_file(archivo)
 
-    crearWordCloud(pred_wordcloud_df, "general", cloud_mask)
-    crearWordCloud(pred_pos, "positivo", upvote_mask)
-    crearWordCloud(pred_neg, "negativo", downvote_mask)
-    crearWordCloud(pred_neu, "neutral", comment_mask)
+    crearWordCloud(pred_wordcloud_df, "general", cloud_mask, idioma)
+    crearWordCloud(pred_pos, "positivo", upvote_mask, idioma)
+    crearWordCloud(pred_neg, "negativo", downvote_mask, idioma)
+    crearWordCloud(pred_neu, "neutral", comment_mask, idioma)
 
     

@@ -17,4 +17,4 @@ sentimiento.predecir("extraccion_tweets.csv", "Text", "en")
 # sentimiento.predecir("extraccion_tweets.csv", "Text", "es")
 
 """wordcloud(nombre_archivo, color_fondo)"""
-sentimiento.wordcloud(palabra, "white")
+sentimiento.wordcloud(palabra, "white", 'es')

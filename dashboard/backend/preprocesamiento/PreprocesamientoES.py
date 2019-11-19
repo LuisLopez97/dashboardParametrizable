@@ -85,15 +85,15 @@ class Preprocesamiento:
     def limpieza(self, tweets):
         # No URLs
         print("No URLs")
-        tweets = tweets.str.replace('\w+:\/\/\S+', "")
+        tweets = tweets.str.replace(r'\w+:\/\/\S+', "")
 
         # No Usertags
         print("No Usertags")
-        tweets = tweets.str.replace('@(\w+)', "")
+        tweets = tweets.str.replace(r'@(\w+)', "")
 
         # No Hashtags
         print("No Hashtags")
-        tweets = tweets.str.replace('#(\w+)',"")
+        tweets = tweets.str.replace(r'#(\w+)',"")
 
         # Remover Emoticones
         print("Convertir Emoticones")
@@ -123,7 +123,7 @@ class Preprocesamiento:
 
         # Remover todo lo que no sea letras para este punto
         print("Remover todo lo que no sea letras para este punto")
-        tweets = tweets.str.replace('[^a-zA-Z ]+', '')
+        tweets = tweets.str.replace(r'[^a-zA-Z ]+', '')
 
         # Remover carácteres repetidos
         print("Remover carácteres repetidos")
@@ -133,6 +133,7 @@ class Preprocesamiento:
         print("Remover StopWords")
         stop = stopwords.words("spanish")
         stop_set = set(stop)
+        stop_set.discard('no')
         tweets = tweets.apply(lambda x: ' '.join([word for word in x.split() if word not in (stop_set)]))
 
         # Unir columna limpia al Dataframe
