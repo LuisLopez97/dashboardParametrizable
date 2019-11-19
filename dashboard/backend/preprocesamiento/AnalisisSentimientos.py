@@ -1,4 +1,5 @@
 from TweetsExtraction import TweepyExtraction as tweepy_extraction
+from TweetsExtraction import ScrappingExtraction as scrapping_extraction
 from Preprocesamiento import Preprocesamiento as preprocesamiento_en
 from PreprocesamientoES import Preprocesamiento as preprocesamiento_es
 from FeatureExtraction import FeatureExtraction as feature_extraction
@@ -6,6 +7,7 @@ from Prediction import Prediction as prediction
 from pathlib import Path, PurePath
 from wordcloud import WordCloud, STOPWORDS
 from PIL import Image
+import datetime as dt
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -17,12 +19,23 @@ def instalarLibrarias():
     # Instala las librerías necesarias para ejecutar el proceso de modelado
     subprocess.call([sys.executable, "-m", "pip", "install","-r", "requirements.txt"])
 
-def extraccion(idioma, palabra, tiempo):
+def extraccionTiempoReal(palabra, idioma, tiempo):
     print("=== RECOLECCION INICIADA ===")
     # Inicializando objeto TweepyExtraction
     ext = tweepy_extraction(tiempo)
     # Ejecutando recoleccion
     ext.recoleccion(idioma, palabra)
+
+def extraccionHistorico(palabra, idioma = 'en', limite_tweets=None, fecha_inicio=dt.date(2019, 10, 1), fecha_final=dt.date.today(), bins=20):
+    # Validación de idioma
+    if idioma != "en" and idioma != "es":
+        print("Idioma no reconocido: " + idioma)
+        return
+    # Inicializando objeto TweepyExtraction
+    ext = scrapping_extraction(
+        palabra, limite_tweets, fecha_inicio, fecha_final, idioma, bins)
+    # Ejecutando recoleccion
+    ext.recoleccion()
 
 def entrenar(dataset_entrenamiento, columna_tweets, columna_sentimientos, idioma):
     if idioma == "en":
@@ -94,6 +107,7 @@ def wordcloud(nombre_wordcloud, color_fondo):
     # Leer Predicción
     print("Lectura de Datasets")
     pred_df = pd.read_csv(archivo, encoding='ISO-8859-1')
+    print(f"Cantidad Tweets Total: {pred_df.shape[0]}")
     # Leer Extracción Lematizada
     archivo = ruta_actual / 'TestData' / 'Output' / 'prediccion_wordcloud.csv'
     pred_wordcloud_df = pd.read_csv(archivo, encoding='ISO-8859-1')
@@ -103,6 +117,9 @@ def wordcloud(nombre_wordcloud, color_fondo):
     pred_pos = pred_wordcloud_df[pred_df['Sentiment'] == 'positivo']
     pred_neg = pred_wordcloud_df[pred_df['Sentiment'] == 'negativo']
     pred_neu = pred_wordcloud_df[pred_df['Sentiment'] == 'neutral']
+    print(f"Cantidad Tweets Positivos: {pred_pos.shape[0]}")
+    print(f"Cantidad Tweets Negativos: {pred_neg.shape[0]}")
+    print(f"Cantidad Tweets Neutros: {pred_neu.shape[0]}")
     
     # Mascara
     carpeta = Path(ruta_actual / 'DB' / 'img')
