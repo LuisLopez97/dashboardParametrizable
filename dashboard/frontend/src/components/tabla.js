@@ -1,18 +1,24 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
-import { getSearchs } from '../actions/searchs';
+import Axios from 'axios';
 
 class Tabla extends Component {
-    static PropTypes = {
-        searchs: PropTypes.array.isRequired,
-        getsearchs: PropTypes.array.isRequired
+    state = {
+        loading: true,
+        searchs: [],
     }
 
     componentDidMount() {
-        this.props.getSearchs();
+        this.getData()
     }
-
+    getData = () => {
+        this.setState({ loading: true }, () => {
+            Axios.get('/static/tweetsp.json/')
+                .then(result => this.setState({
+                    loading: false,
+                    searchs: [...result.data.slice(0, 10)],
+                }));
+        });
+    }
     render() {
         return (
             <div className="table-responsive-md overflow-auto">
@@ -27,7 +33,7 @@ class Tabla extends Component {
                         </tr>
                     </thead>
                     <tbody className="p-5">
-                        {this.props.searchs.map(search => (
+                        {this.state.searchs.map(search => (
                             <tr key={search.id} className="p-5">
                                 <td>{search.airline_sentiment}</td>
                                 <td>{search.negativereason}</td>
@@ -42,8 +48,4 @@ class Tabla extends Component {
     }
 }
 
-const mapStateToProps = state => ({
-    searchs: state.searchs.searchs
-})
-
-export default connect(mapStateToProps, { getSearchs })(Tabla);
+export default Tabla;
