@@ -1,204 +1,282 @@
-# Importacion de librerias
-from sklearn.utils import resample
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import SGDClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import confusion_matrix
+from LongFunctionProgress import provide_progress_bar
+from LongFunctionProgress import progress_wrapped
+from imblearn.under_sampling import NearMiss
+from imblearn.over_sampling import SMOTE
+from pathlib import Path, PurePath
 from tqdm import tqdm
-import numpy as np
+from time import time
 import pandas as pd
-import nltk
-import csv
+import numpy as np
+import os
 import pickle
-# import json
+
 
 class FeatureExtraction:
-    word_features = []
-    train_set_upsampled = []
-    test_set = []
-    archivo = ""
-    columna_texto = ""
-    columna_sentimiento = ""
-
-    def __init__(self, archivo, columna_texto, columna_sentimiento):
-        print("=== INICIANDO CLASE: FEATURE EXTRACTION ===")
-        self.archivo = archivo
-        self.columna_texto = columna_texto
+    def __init__(self, dataset,columna_tweets, columna_sentimiento, idioma):
+        self.dataset = dataset
+        self.columna_tweets = columna_tweets
         self.columna_sentimiento = columna_sentimiento
-        self.crearConjuntos()
+        self.idioma = idioma
+        self.ruta_actual = PurePath(Path.cwd())
 
-    def crearConjuntos(self):
-        print("=== CREACION CONJUNTOS DE ENTRENAMIENTO Y PRUEBAS ===")
-        # Permite desplegar el texto completo en Jupyter y en Terminal
-        pd.set_option('display.max_colwidth', -1)
+    def extraction(self, extractor):
+        print("=== FEATURE EXTRACTION INICIADO ===")
+        # Cargando rutas y lectura dataset
 
-        # Lectura de CSV
-        data = pd.read_csv(self.archivo)
-        data_lemmatized = data[self.columna_texto]
-        self.word_features = self.bagOfWords(data_lemmatized)
-        
-        # Conjunto de Entrenamiento y Pruebas
-        porcentaje = int(len(data_lemmatized) * .20)
-        train_set, self.test_set = data[porcentaje:], data[:porcentaje]
-        print("train_set: ", train_set.shape)
-        print("test_set: ", self.test_set.shape)
-        self.train_set_upsampled = self.resampling(train_set, self.columna_sentimiento)
+        # Dividir conjuntos (Entrenamiento y pruebas)
+        if self.idioma == "es":
+            X_train, y_train = self.path('DB', self.dataset)
+            X_test, y_test = self.path('DB', 'tweets_es_development.csv')
+        elif self.idioma == "en":
+            x, y = self.path('DB', self.dataset)
+            X_train, X_test, y_train, y_test = self.split(x, y)
+        else: 
+            print("Idioma no reconocido. Terminando.")
+            return
 
-        print("Guardando el remuestreo de train_set en CSV...")
-        # Guardar conjunto de entrenamiento y pruebas en CSV
-        train_csv = pd.DataFrame(self.train_set_upsampled).to_csv (r'train_set_upsampled.csv', index = None, header=True)
-        print("Guardando test_set en CSV...")
-        test_csv = pd.DataFrame(self.test_set).to_csv (r'test_set.csv', index = None, header=True)
+        # Reducción
+        if X_train.shape[0] > 15000 and y_train.shape[0] > 15000:
+            print(f"Bag of Words: Muestra mayor a 20,000 registros: {X_train.shape[0]} Reduciendolo 15000...")
+            X_train = X_train[:15000]
+            y_train = y_train[:15000]
+            print(X_train.shape[0])
+            print(y_train.shape[0])
 
-    # Crear un Bag of Words
-    def bagOfWords(self, tweets_lematizados):
-        l = tweets_lematizados.tolist()        # Convertir Series a Lista
-        all_words = []
-        for linea in l:                     # Extraer todas las palabras
-            lista = str(linea).split()
-            all_words += lista
-            
-        # Utilizar FreqDist para encontrar las palabras más utilizadas en todos los documentos
-        all_words_freq = nltk.FreqDist(all_words)
-
-        # Y tomar los primeros 2000 más frecuentes
-        return list(all_words_freq)[:2000]
-
-
-    # Definir el feature extractor
-    def document_features(self, document):
-        document_words = set(document)
-        features = {}
-        for word in self.word_features:
-            features['contains({})'.format(word)] = (word in document_words)
-        return features
-
-
-
-    # Resampling
-    def resampling(self, train_set, columna_sentimiento):
-        print("\n=== RESAMPLING A TRAIN_SET ===")
-        # Obtener los sentimientos en el dataframe y la cantidad que existen
-        contador_sentimientos = train_set[columna_sentimiento].value_counts()
-        print("Sentimientos antes del Resampling: ")
-        print(contador_sentimientos)
-
-        # Obtener la cantidad más grande
-        mayor = contador_sentimientos.max()
-
-        # Obtener el sentimiento con dicha cantidad grande
-        for items in contador_sentimientos.iteritems():
-            if items[1] == mayor:
-                sentimiento_mayor = items[0]
-                
-        # Borrar el sentimiento más grande de la lista
-        del(contador_sentimientos[sentimiento_mayor])
-
-        # Obtener los otros dos sentimientos que son menores
-        lista_contador_sentimientos = contador_sentimientos.keys()
-
-        # Separate majority and minority classes
-        df_majority = train_set[train_set.sentiment == sentimiento_mayor]
-        df_minority_1 = train_set[train_set.sentiment == lista_contador_sentimientos[0]]
-        df_minority_2 = train_set[train_set.sentiment == lista_contador_sentimientos[1]]
-        print("Resampling en progreso...")
-        # Upsample minority class
-        df_upsampled_1 = resample(df_minority_1, 
-                                        replace=True,     # sample with replacement
-                                        n_samples=mayor,    # to match majority class
-                                        random_state=123) # reproducible results
-
-        df_upsampled_2 = resample(df_minority_2, 
-                                        replace=True,     # sample with replacement
-                                        n_samples=mayor,    # to match majority class
-                                        random_state=123) # reproducible results
-        
-        # Combine majority class with upsampled minority class
-        train_upsampled = pd.concat([df_majority, df_upsampled_1, df_upsampled_2])
-        print("Resultados del Resampling:")
-        print(train_upsampled[columna_sentimiento].value_counts())
-        return train_upsampled
-
-
-    # Preparar los features del conjunto de entrenamiento y pruebas
-    def featuresPreparation(self, train_upsampled_file, test_set_file):
-        print("\n=== FEATURE PREPARATION ===")
-        print("Lectura de CSV...")
-        # Leer CSV con los archivos del conjunto de entrenamiento y prueba sin features
-        train_set = pd.read_csv(train_upsampled_file)
-        test_set = pd.read_csv(test_set_file)
-        # Convertir el conjunto de entrenamiento y pruebas a una listas
-        train = train_set.values.tolist()
-        test = test_set.values.tolist()
-        
-        # Crear los conjuntos de entrenamiento y prueba con las carácterísticas (pivoteo de Bag of Words)
-        # Dividir el train en partes
-        filas = int(train_set.shape[0])
-        print(filas)
-        if filas > 2500:
-            self.divisor = int(filas / 2500)
-            intervalos = int(filas / self.divisor)
+        # Feature Extraction
+        if extractor == 'bagofwords':
+            print("Feature Extraction: Bag of Words...")
+            X_features_train, X_features_test, vectorizer = self.bagOfWords(
+                X_train, X_test)
+        elif extractor == 'tfidf':
+            X_features_train, X_features_test, vectorizer = self.TfidfVectorizer(
+                X_train, X_test)
         else:
-            intervalos = 1
-        print(self.divisor)
-        print(intervalos)
-        print("Iniciando el Feature Extraction (pivoteo): ")
-        inicio = 0
-        limite = 0
-        for i in range(self.divisor):
-            # Definir limite derecho
-            limite += intervalos
-            # Decisiones de intervalos
-            print(f"Training set: {i}")
-            if i == 0:                  # Si es la primera iteracion
-                train_feature_sets = [(self.document_features(str(d)), c) for (d,c) in tqdm(train[:limite])]
-            elif (i+1) == self.divisor:      # Si es la última iteracion
-                train_feature_sets = [(self.document_features(str(d)), c) for (d,c) in tqdm(train[limite:])]
-            else:                       # Si es cualquier otra iteracion
-                train_feature_sets = [(self.document_features(str(d)), c) for (d,c) in tqdm(train[inicio:limite])]
-            # Guardar Pickle
-            self.trainingPickle(f"train_feature_sets_{i}", train_feature_sets)
-            # Definir limite izquierdo
-            inicio = limite
-                
-        print("Test set:")
-        test_feature_sets = [(self.document_features(str(d)), c) for (d,c) in tqdm(test)]
-        print("¡Feature Extraction completado con exito!")
-        self.trainingPickle("Test_feature_sets", test_feature_sets)
+            print('Extractor no seleccionado. Terminando')
+            return
 
-    def modeling(self, divisor):
-        print("\n=== MODELING ===")        
-        # Read Pickles with train and test features
-        print("Lectura de Pickles")
-        print("Training set...")
-        feature_train_list = []
-        for i in range(divisor):
-            print(f"Abriendo Pickle_{i}...")
-            with open(f'train_feature_sets_{i}', 'rb') as infile:
-                training_list = pickle.load(infile)
-            print(f"Pickle_{i} abierto con exito")
-            feature_train_list += training_list
-        
-        print("Test set:...")
-        print("Abriendo Pickle...")
-        with open('test_feature_sets', 'rb') as infile:
-            feature_test_list = pickle.load(infile)
-        print(f"Pickle_{i} abierto con exito")
+        # Upsamping SMOTE
+        print("Upsamping SMOTE...")
+        print(X_features_train.shape[0])
+        if X_features_train.shape[0] > 15000 or y_train.shape[0] > 15000:
+            print("Upsampling: Muestra mayor a 20,000 registros. Reduciendolo 15000...")
+            X_features_train = X_features_train[:15000]
+            y_train = y_train[:15000]
+            print(X_features_train.shape[0])
+            print(y_train.shape[0])
 
-        print(feature_test_list[:2][:])
-        # Train de model (Naive Bayes)
-        classifier = nltk.NaiveBayesClassifier.train(feature_train_list)
-        
-        # Evaluate the training with Accuracy score
-        print(nltk.classify.accuracy(classifier, feature_test_list))
+        X_resampled_path = Path(self.ruta_actual / ("DB/Resampling_SMOTE/X_resampled_" + extractor+"_"+self.idioma))
+        y_resampled_path = Path(self.ruta_actual / ("DB/Resampling_SMOTE/y_resampled_" + extractor+"_"+self.idioma))
+        if(X_resampled_path.exists() and y_resampled_path.exists()):
+            X_resampled = self.loadPickle("DB/Resampling_SMOTE/X_resampled_" + extractor+"_"+self.idioma)
+            y_resampled = self.loadPickle("DB/Resampling_SMOTE/y_resampled_" + extractor+"_"+self.idioma)
+        else:
+            X_resampled, y_resampled = self.overSamplingSMOTE(
+                X_features_train, y_train, vectorizer, extractor)
+        print("=== FEATURE EXTRACTION TERMINADO ===")
 
-        # Print 100 most significative words in analysis
-        print(classifier.show_most_informative_features(100))
+        # Modeling
+        print("=== MODELADO INICIADO ===")
+        print("Modelado: MultinomialNB...")
+        NB_clf = self.MultiNaiveBayes(X_resampled, X_features_test, y_resampled, y_test)
+        self.crearPickle(NB_clf, 'Classifiers/MultinomialNB_' + self.idioma)
 
-    def trainingPickle(self, name, datos):
-            # Guardando como pickle
-            print(f"Guardando pickle: {name}...")
-            # Training Set
-            with open(name, 'wb') as pickleFile:
-                pickle.dump(datos, pickleFile)
-            print(f"¡Pickle {name} guardado con éxito!")
-            
-#fe = FeatureExtraction("data_lemmatized.csv", "data_lemmatized", "sentiment")
-#fe.featuresPreparation("train_set_upsampled.csv", 'test_set.csv')
-#fe.modeling(8)
+        print("Modelado: LogisticRegression...")
+        LR_clf = self.LogisticRegression(X_resampled, X_features_test, y_resampled, y_test)
+        self.crearPickle(LR_clf, 'Classifiers/LogisticRegression_' + self.idioma)
+
+        # print("Modelado: SVM...")
+        # SVM_clf = self.SVM(X_resampled, X_features_test, y_resampled, y_test)
+        # self.crearPickle(SVM_clf, 'Classifiers/SVM_'+ self.idioma)
+
+        print("Modelado: Random Forest...")
+        RF_clf = self.RandomForest(X_resampled, X_features_test, y_resampled, y_test)
+        self.crearPickle(RF_clf, 'Classifiers/RandomForest_' + self.idioma)
+
+        print("Modelado: Stochastic Gradient Boost...")
+        SGD_clf = self.SGD(X_resampled, X_features_test, y_resampled, y_test)
+        self.crearPickle(SGD_clf, 'Classifiers/SGD_' + self.idioma)
+
+        print("=== MODELADO TERMINADO ===")
+
+
+    def bagOfWords(self,X_train, X_test):
+        # Inicializar al objeto CountVectorizer: count_vectorizer
+        count_vectorizer = CountVectorizer()
+        # Conjunto de Entrenamiento
+        count_train = count_vectorizer.fit_transform(X_train.values.astype('U'))
+        # Conjunto de pruebas
+        count_test = count_vectorizer.transform(X_test.values.astype('U'))
+        #print(count_vectorizer.get_feature_names()[:30])
+        count_df = pd.DataFrame(count_train.A, columns=count_vectorizer.get_feature_names())
+        print(count_df.head())
+        # Guardando como pickle
+        self.crearPickle(count_vectorizer, 'Vectorizers/CountVectorizer_'+ self.idioma)
+        return count_train, count_test, count_vectorizer
+
+    def TfidfVectorizer(self, X_train, X_test):
+        # Inicializar al objeto TfidfVectorizer: tfidf_vectorizer
+        tfidf_vectorizer = TfidfVectorizer()
+
+        # Transformar los datos de entrenamiento: tfidf_train
+        tfidf_train = tfidf_vectorizer.fit_transform(X_train.values.astype('U'))
+
+        # Transformar los datos de prueba: tfidf_test
+        tfidf_test = tfidf_vectorizer.transform(X_test.values.astype('U'))
+
+        # Imprimir las primeros 5 características
+        tfidf_df = pd.DataFrame(
+            tfidf_train.A, columns=tfidf_vectorizer.get_feature_names())
+        print(tfidf_df.head())
+
+        # Guardando como pickle
+        self.crearPickle(tfidf_vectorizer, 'Vectorizers/TfidfVectorizer' + self.idioma)
+        return tfidf_train, tfidf_test, tfidf_vectorizer
+
+    @progress_wrapped(estimated_time=100)
+    def overSamplingSMOTE(self, X_train, y_train, vectorizer, extractor):
+        # Define the resampling method
+        method = SMOTE(kind='regular')
+        # Convertir X_train (Spacy Matrix a DataFrame)
+        X_df = pd.DataFrame(
+            X_train.A, columns=vectorizer.get_feature_names())
+        # Create the resampled feature set
+        X_resampled, y_resampled = method.fit_sample(X_df.to_numpy(), y_train.to_numpy())
+        print(pd.value_counts(pd.Series(y_resampled)))
+        # Guardar en Pickles
+        self.crearPickle(X_resampled, "DB/Resampling_SMOTE/X_resampled_" + extractor + "_" + self.idioma)
+        self.crearPickle(y_resampled, "DB/Resampling_SMOTE/y_resampled_" + extractor + "_" + self.idioma)
+        return X_resampled, y_resampled
+
+    def MultiNaiveBayes(self, X_train, X_test, y_train, y_test):
+        # Instanciar modelo MultinomialNB
+        nb_classifier = MultinomialNB()
+        # Medicion del tiempo de entrenamiento
+        t0 = time()
+        # Entrenar el modelo
+        nb_classifier.fit(X_train, y_train)
+        # Impresion del tiempo de entrenamiento
+        print("training time", round(time() - t0, 3), "s")
+        # Predecir con el modelo
+        pred = nb_classifier.predict(X_test)
+        # Evaluar el modelo
+        score = classification_report(y_test, pred)
+        print(score)
+        print(confusion_matrix(y_test, pred))
+        return nb_classifier
+
+    def LogisticRegression(self, X_train, X_test, y_train, y_test):
+        # Instanciar modelo LogisticRegression
+        lr_classifier = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial')
+        # Medicion del tiempo de entrenamiento
+        t0 = time()
+        # Entrenar el modelo
+        lr_classifier.fit(X_train, y_train)
+        # Impresion del tiempo de entrenamiento
+        print("training time", round(time() - t0, 3), "s")
+        # Predecir con el modelo
+        pred = lr_classifier.predict(X_test)
+        # Evaluar el modelo
+        score = classification_report(y_test, pred)
+        print(score)
+        print(confusion_matrix(y_test, pred))
+        return lr_classifier
+
+    def SVM(self, X_train, X_test, y_train, y_test):
+        # Instanciar modelo SVC
+        svm_classifier = SVC(kernel='linear')
+        # Medicion del tiempo de entrenamiento
+        t0 = time()
+        # Entrenar el modelo
+        svm_classifier.fit(X_train, y_train)
+        # Impresion del tiempo de entrenamiento
+        print("training time", round(time() - t0, 3), "s")
+        # Predecir con el modelo
+        pred = svm_classifier.predict(X_test)
+        # Evaluar el modelo
+        score = classification_report(y_test, pred)
+        print(score)
+        print(confusion_matrix(y_test, pred))
+        return svm_classifier
+
+    def SGD(self, X_train, X_test, y_train, y_test):
+        # Instanciar modelo SGD
+        sgd_classifier = SGDClassifier(max_iter=1000, tol=1e-3)
+        # Medicion del tiempo de entrenamiento
+        t0 = time()
+        # Entrenar el modelo
+        sgd_classifier.fit(X_train, y_train)
+        # Impresion del tiempo de entrenamiento
+        print("training time", round(time() - t0, 3), "s")
+        # Predecir con el modelo
+        pred = sgd_classifier.predict(X_test)
+        # Evaluar el modelo
+        score = classification_report(y_test, pred)
+        print(score)
+        print(confusion_matrix(y_test, pred))
+        return sgd_classifier
+
+    def RandomForest(self, X_train, X_test, y_train, y_test):
+        # Instanciar modelo RandomForest
+        rf_classifier = RandomForestClassifier(n_estimators=100, max_depth=2,random_state=0)
+        # Medicion del tiempo de entrenamiento
+        t0 = time()
+        # Entrenar el modelo
+        rf_classifier.fit(X_train, y_train)
+        # Impresion del tiempo de entrenamiento
+        print("training time", round(time() - t0, 3), "s")
+        # Predecir con el modelo
+        pred = rf_classifier.predict(X_test)
+        # Evaluar el modelo
+        score = classification_report(y_test, pred)
+        print(score)
+        print(confusion_matrix(y_test, pred))
+        return rf_classifier
+
+
+    def path(self, carpeta, dataset):
+        # Direccion Pickle Clasificador
+        _archivo = self.ruta_actual / carpeta / dataset
+        # Leer Dataset
+        print(f"Leyendo Dataset {dataset}...")
+        pd.set_option('display.max_colwidth', -1)
+        tweets = pd.read_csv(_archivo, encoding='ISO-8859-1')
+        x = tweets[self.columna_tweets]
+        y = tweets[self.columna_sentimiento]
+        return x, y
+
+
+    def split(self, x, y):
+        # Conjunto de entrenamiento y prueba
+        print("Creando conjunto de entrenamiento y prueba...")
+        X_train, X_test, y_train, y_test = train_test_split(
+            x, y, test_size=0.33, random_state=53)
+        return X_train, X_test, y_train, y_test
+
+    def crearPickle(self, obj , archivo):
+        # Guardando como pickle
+        print(f"Pickle: {archivo}...")
+        # Direccion Pickle Clasificador
+        _archivo = self.ruta_actual / archivo
+        with open(_archivo, 'wb') as pickleFile:
+            pickle.dump(obj, pickleFile)
+        print(f"Pickle: {archivo} guardado con éxito!")
+
+    def loadPickle(self, archivo_pickle):
+        _archivo = self.ruta_actual / archivo_pickle
+        print(f"Abriendo Pickle {archivo_pickle}...")
+        with open(_archivo, 'rb') as infile:
+            obj = pickle.load(infile)
+        print(f"Pickle {archivo_pickle} abierto con exito")
+        return obj
+
+# FeatureExtraction2("data_lemmatized.csv", 'data_lemmatized', "sentiment")

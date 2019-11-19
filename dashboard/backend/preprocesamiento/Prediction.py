@@ -1,68 +1,72 @@
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
-from imblearn.over_sampling import SMOTE
-from imblearn.under_sampling import NearMiss
-from longFunctionProgress import provide_progress_bar
-from longFunctionProgress import progress_wrapped
 from Preprocesamiento import Preprocesamiento as preprocesamiento
-from FeatureExtraction2 import FeatureExtraction as fe
+from FeatureExtraction import FeatureExtraction as fe
+from pathlib import Path, PurePath
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
-import os
 import pickle
+import os
 
 class Prediction:
-    def __init__(self, nombre_clasificador, nombre_vectorizador, test_data):
+    def __init__(self, nombre_clasificador, nombre_vectorizador, test_data, columna_tweets):
         self.nombre_clasificador = nombre_clasificador
         self.nombre_vectorizador = nombre_vectorizador
         self.test_data = test_data
+        self.columna_tweets = columna_tweets
 
     def predecir(self):
         # Definir ruta para lectura de Pickle de clasificador
-        cur_path = os.path.dirname(__file__)
-        clf = self.loadPickle(cur_path, 'Classifiers', self.nombre_clasificador)
+        ruta_actual = PurePath(Path.cwd())
+        clf = self.loadPickle(ruta_actual, 'Classifiers', self.nombre_clasificador)
 
         # Definir ruta para lectura de Pickle de vectorizador
-        cur_path = os.path.dirname(__file__)
-        vectorizer = self.loadPickle(cur_path, 'Vectorizers', self.nombre_vectorizador)
+        vectorizer = self.loadPickle(ruta_actual, 'Vectorizers', self.nombre_vectorizador)
 
         # Leer dataset real
-        dataset = os.path.join(cur_path, 'TestData', self.test_data)
+        dataset = ruta_actual / 'TestData' / self.test_data
         tweets = pd.read_csv(dataset, encoding='ISO-8859-1')
-        features = tweets['SentimentText']
+        features = tweets[self.columna_tweets]
 
         # Preprocesamiento
-        prep = preprocesamiento("test.csv", "SentimentText", "Sentiment")
+        prep = preprocesamiento("test.csv", self.columna_tweets, "")
         tweets_limpios = prep.limpieza(features)
 
         # lemmatización
         print("Iniciar Lemmatización")
         lemmatizated_data = prep.lemmatization(tweets_limpios)
 
+        # Guardar preprocesamiento para el WordCloud
+        print("Guardando preprocesamiento para el WordCloud")
+        pred_lemmatized = pd.DataFrame({'data_lemmatized': lemmatizated_data})
+        archivo = ruta_actual / 'TestData' / 'Output' / 'prediccion_wordcloud.csv'
+        pred_lemmatized.to_csv(archivo, index=None, header=True)
+
         # Feature Extraction: Bag of Words
+        print("Feature Extraction: Bag of Words")
         count_test = vectorizer.transform(lemmatizated_data.values.astype('U'))
 
         # Prediccion
+        print("Prediccion con " + self.nombre_clasificador + " y vectorizador " + self.nombre_vectorizador)
         pred = clf.predict(count_test)
 
         # Unir prediccion al Dataframe
-        # tweets.insert(0, 'sentiment', pred)
-        tweets['sentiment'] = pred
-
+        # tweets.insert(0, 'Sentiment', pred)
+        tweets['Sentiment'] = pred
+        
+        # Convertir numeros a palabras
+        tweets["Sentiment"] = tweets["Sentiment"].replace(
+            to_replace=[1, 0, -1], value=["positivo", "neutral", "negativo"])
+        
         # Guardar a CSV
-        cur_path = os.path.dirname(__file__)
-        print("Guardando prediccion a CSV...")
-        archivo = os.path.join(cur_path, 'TestData', 'Output', 'prediccion.csv')
+        print("Guardando prediccion como CSV...")
+        ruta_actual = PurePath(Path.cwd())                                # Ruta actual
+        archivo = ruta_actual / 'TestData' / 'Output' / 'prediccion.csv'  # Direccion CSV
         tweets.to_csv(archivo, index=None, header=True)
 
         # Guardar como JSON
-        print("Guardando prediccion a JSON...")
-        archivo = os.path.join(cur_path, 'TestData', 'Output','prediccion.json')
+        print("Guardando prediccion como JSON...")
+        # archivo = ruta_actual.parent.parent / 'frontend' / 'prediccion.json'  # Direccion JSON
+        archivo = ruta_actual / 'TestData' / 'Output' / 'prediccion.json'        # Direccion CSV
         tweets.to_json(archivo, orient='records', lines=True)
 
     def loadPickle(self, cur_path, carpeta, _pickle):
