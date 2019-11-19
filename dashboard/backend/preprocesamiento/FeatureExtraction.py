@@ -44,6 +44,14 @@ class FeatureExtraction:
             print("Idioma no reconocido. Terminando.")
             return
 
+        # Reducción
+        if X_train.shape[0] > 15000 and y_train.shape[0] > 15000:
+            print(f"Bag of Words: Muestra mayor a 20,000 registros: {X_train.shape[0]} Reduciendolo 15000...")
+            X_train = X_train[:15000]
+            y_train = y_train[:15000]
+            print(X_train.shape[0])
+            print(y_train.shape[0])
+
         # Feature Extraction
         if extractor == 'bagofwords':
             print("Feature Extraction: Bag of Words...")
@@ -59,10 +67,10 @@ class FeatureExtraction:
         # Upsamping SMOTE
         print("Upsamping SMOTE...")
         print(X_features_train.shape[0])
-        if X_features_train.shape[0] > 20000 and y_train.shape[0] > 20000:
-            print("Muestra mayor a 20,000 registros. Reduciendo a la mitad...")
-            X_features_train = X_features_train[:(X_features_train.shape[0]//2)]
-            y_train = y_train[:y_train.shape[0]//2]
+        if X_features_train.shape[0] > 15000 or y_train.shape[0] > 15000:
+            print("Upsampling: Muestra mayor a 20,000 registros. Reduciendolo 15000...")
+            X_features_train = X_features_train[:15000]
+            y_train = y_train[:15000]
             print(X_features_train.shape[0])
             print(y_train.shape[0])
 
@@ -80,26 +88,25 @@ class FeatureExtraction:
         print("=== MODELADO INICIADO ===")
         print("Modelado: MultinomialNB...")
         NB_clf = self.MultiNaiveBayes(X_resampled, X_features_test, y_resampled, y_test)
+        self.crearPickle(NB_clf, 'Classifiers/MultinomialNB_' + self.idioma)
 
         print("Modelado: LogisticRegression...")
         LR_clf = self.LogisticRegression(X_resampled, X_features_test, y_resampled, y_test)
+        self.crearPickle(LR_clf, 'Classifiers/LogisticRegression_' + self.idioma)
 
         # print("Modelado: SVM...")
         # SVM_clf = self.SVM(X_resampled, X_features_test, y_resampled, y_test)
+        # self.crearPickle(SVM_clf, 'Classifiers/SVM_'+ self.idioma)
 
         print("Modelado: Random Forest...")
         RF_clf = self.RandomForest(X_resampled, X_features_test, y_resampled, y_test)
+        self.crearPickle(RF_clf, 'Classifiers/RandomForest_' + self.idioma)
 
         print("Modelado: Stochastic Gradient Boost...")
         SGD_clf = self.SGD(X_resampled, X_features_test, y_resampled, y_test)
+        self.crearPickle(SGD_clf, 'Classifiers/SGD_' + self.idioma)
 
         print("=== MODELADO TERMINADO ===")
-        self.crearPickle(NB_clf, 'Classifiers/MultinomialNB_' + self.idioma)
-        self.crearPickle(
-            LR_clf, 'Classifiers/LogisticRegression_' + self.idioma)
-        # self.crearPickle(SVM_clf, 'Classifiers/SVM_'+ self.idioma)
-        self.crearPickle(RF_clf, 'Classifiers/RandomForest_' + self.idioma)
-        self.crearPickle(SGD_clf, 'Classifiers/SGD_' + self.idioma)
 
 
     def bagOfWords(self,X_train, X_test):

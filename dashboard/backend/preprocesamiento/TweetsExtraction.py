@@ -1,5 +1,5 @@
+
 #Librerias
-from twitterscraper import query_tweets
 from tweepy.streaming import StreamListener
 from tweepy import Stream
 from pathlib import Path, PurePath
@@ -102,6 +102,7 @@ class ScrappingExtraction:
         self.ruta_extraccion = Path(PurePath(Path.cwd()) / 'TestData' / 'extraccion_tweets.csv')
 
     def recoleccion(self):
+        from twitterscraper import query_tweets
         # Inicia recoleccion con idioma seleccionado por usuario
         print("=== RECOLECCIÓN TWEETSCRAPPING INICIADO")
         list_of_tweets = query_tweets(
