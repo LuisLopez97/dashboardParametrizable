@@ -10,6 +10,7 @@ import Navbar from './navbar'
 import Section1 from './section1'
 import DataTable from './dataTable';
 import Chart from './chart';
+import Test from './test';
 
 class App extends React.Component {
 
@@ -30,6 +31,8 @@ class App extends React.Component {
                                         component={DataTable} />
                                     <Route exact path="/Charts"
                                         component={Chart} />
+                                    <Route exact path="/test"
+                                        component={Test} />
                                 </Switch>
                             </Router>
                         </div>
