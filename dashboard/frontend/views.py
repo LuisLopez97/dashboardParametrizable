@@ -1,10 +1,11 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from . import testing
-from shutil import copy
-
 import os
 import json
+import datetime as dt
+
+from django.shortcuts import render
+from django.http import HttpResponse
+from shutil import copy
+from .preprocesamiento import AnalisisSentimientos as sentimiento
 
 
 def index(request):
@@ -13,15 +14,18 @@ def index(request):
 
 def test(request):
     if request.method == 'POST':
-        if os.path.isfile("img/tweetsp.json"):
-            os.remove("img/tweetsp.json")
+        if os.path.isfile("img/prediccion.json"):
+            os.remove("img/prediccion.json")
         data = json.loads(request.body.decode('utf-8'))
-        print(data)
         palabra = data.get('keyword')
-        print(palabra)
         idioma = data.get('idioma')
-        print(idioma)
-        copy("tweets3p.json", "img/tweetsp.json")
+        tweets = int(data.get('tweets'))
+        fecha_inicio = dt.date.today() - dt.timedelta(days=15)
+        """ extraccionHistorico(palabra, idioma, limite_tweets, fecha_inicio, fecha_final, bins) """
+        sentimiento.extraccionHistorico(
+            palabra,  idioma, tweets, fecha_inicio)
+        sentimiento.predecir("extraccion_tweets.csv", "Text", idioma)
+        sentimiento.wordcloud(palabra, "white", idioma)
         return HttpResponse(status=200)
 
     else:

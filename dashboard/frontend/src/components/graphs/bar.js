@@ -5,9 +5,9 @@ import { Bar } from 'react-chartjs-2';
 export class Bars extends Component {
 
     render() {
-        let positive = this.props.searchs.filter(({ airline_sentiment: c }) => c === 'positive').length
-        let negative = this.props.searchs.filter(({ airline_sentiment: c }) => c === 'negative').length
-        let neutral = this.props.searchs.filter(({ airline_sentiment: c }) => c === 'neutral').length
+        let positive = this.props.searchs.filter(({ Sentiment: c }) => c === 'positivo').length
+        let negative = this.props.searchs.filter(({ Sentiment: c }) => c === 'negativo').length
+        let neutral = this.props.searchs.filter(({ Sentiment: c }) => c === 'neutral').length
 
         const data = {
             labels: ['Positivo', 'Negativo', 'Neutral'],

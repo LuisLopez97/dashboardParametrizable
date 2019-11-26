@@ -16,9 +16,12 @@ import subprocess
 import sys
 from time import time
 
+
 def instalarLibrarias():
     # Instala las librerías necesarias para ejecutar el proceso de modelado
-    subprocess.call([sys.executable, "-m", "pip", "install","-r", "requirements.txt"])
+    subprocess.call([sys.executable, "-m", "pip",
+                     "install", "-r", "requirements.txt"])
+
 
 def extraccionTiempoReal(palabra, idioma, tiempo):
     print("=== RECOLECCION INICIADA ===")
@@ -27,7 +30,8 @@ def extraccionTiempoReal(palabra, idioma, tiempo):
     # Ejecutando recoleccion
     ext.recoleccion(idioma, palabra)
 
-def extraccionHistorico(palabra, idioma = 'en', limite_tweets=None, fecha_inicio=dt.date(2019, 10, 1), fecha_final=dt.date.today(), bins=20):
+
+def extraccionHistorico(palabra, idioma='en', limite_tweets=None, fecha_inicio=dt.date(2019, 10, 1), fecha_final=dt.date.today(), bins=20):
     # Validación de idioma
     if idioma != "en" and idioma != "es":
         print("Idioma no reconocido: " + idioma)
@@ -38,10 +42,12 @@ def extraccionHistorico(palabra, idioma = 'en', limite_tweets=None, fecha_inicio
     # Ejecutando recoleccion
     ext.recoleccion()
 
+
 def entrenar(dataset_entrenamiento, columna_tweets, columna_sentimientos, idioma):
     if idioma == "en":
         # Inicializando clase preprocesamiento en ingles
-        prep = preprocesamiento_en(dataset_entrenamiento, columna_tweets, columna_sentimientos)
+        prep = preprocesamiento_en(
+            dataset_entrenamiento, columna_tweets, columna_sentimientos)
         # Iniciando Contador de tiempo para preparacion
         t0 = time()
         # Ejecutando la preparación de los datos
@@ -79,18 +85,21 @@ def entrenar(dataset_entrenamiento, columna_tweets, columna_sentimientos, idioma
         print("=== ENTRENAMIENTO TERMINADO EXITOSAMENTE ===")
         # Imprimir el tiempo de ejecución
         print("TIEMPO ENTRENAMIENTO: ", round(time() - t0, 3), "s")
-    else: 
+    else:
         print("Ningun idioma seleccionado, terminando.")
         return
+
 
 def predecir(dataset, columna_tweets, idioma):
     if idioma == "en":
         # Inicializando clase prediction
-        pred = prediction("LogisticRegression_en", 'CountVectorizer_en', dataset, columna_tweets)
+        pred = prediction("LogisticRegression_en",
+                          'CountVectorizer_en', dataset, columna_tweets)
     elif idioma == "es":
         # Inicializando clase prediction
-        pred = prediction("LogisticRegression_es", 'CountVectorizer_es', dataset, columna_tweets)
-    else: 
+        pred = prediction("LogisticRegression_es",
+                          'CountVectorizer_es', dataset, columna_tweets)
+    else:
         print("Idioma no reconocido. Terminano.")
         return
     # Iniciando Contador de tiempo
@@ -99,6 +108,7 @@ def predecir(dataset, columna_tweets, idioma):
     pred.predecir()
     # Imprimir el tiempo de ejecución
     print("TIEMPO PREDICCIÓN: ", round(time() - t0, 3), "s")
+
 
 def wordcloud(nombre_wordcloud, color_fondo, idioma):
     print("=== WORDCLOUD INICIADO ===")
@@ -121,16 +131,16 @@ def wordcloud(nombre_wordcloud, color_fondo, idioma):
     print(f"Cantidad Tweets Positivos: {pred_pos.shape[0]}")
     print(f"Cantidad Tweets Negativos: {pred_neg.shape[0]}")
     print(f"Cantidad Tweets Neutros: {pred_neu.shape[0]}")
-    
+
     # Mascara
     carpeta = Path(ruta_actual / 'DB' / 'img')
-    cloud_mask = np.array(Image.open( carpeta / "cloud.png"))
-    comment_mask = np.array(Image.open( carpeta / "comment.png"))
-    upvote_mask = np.array(Image.open( carpeta / "upvote.png"))
-    downvote_mask = np.array(Image.open( carpeta / "downvote.png"))
-    
+    cloud_mask = np.array(Image.open(carpeta / "cloud.png"))
+    comment_mask = np.array(Image.open(carpeta / "comment.png"))
+    upvote_mask = np.array(Image.open(carpeta / "upvote.png"))
+    downvote_mask = np.array(Image.open(carpeta / "downvote.png"))
 
     # Creando WordClouds
+
     def crearWordCloud(dataframe, sentimiento, mask, idioma):
         # Unificar todos los textos de todas las columnas del dataframe en uno
         text = dataframe.data_lemmatized.values
@@ -145,12 +155,13 @@ def wordcloud(nombre_wordcloud, color_fondo, idioma):
         elif idioma == 'en':
             wordcloud = WordCloud(
                 width=1024, height=720, background_color=color_fondo, collocations=False, mask=mask, stopwords=STOPWORDS).generate(str(text))
-        else: 
-            print("Idioma no reconocido: "+ idioma + ". Terminando")
+        else:
+            print("Idioma no reconocido: " + idioma + ". Terminando")
             return
         print("Guardando WordCloud: wordcloud_" + nombre_wordcloud + ".png")
         # Creando carpeta de WordCloud especifico
-        carpeta = Path(ruta_actual / 'TestData' / 'Output' / 'WordCloud' / nombre_wordcloud)
+        carpeta = Path(ruta_actual / 'TestData' / 'Output' /
+                       'WordCloud' / nombre_wordcloud)
         if not carpeta.exists():
             carpeta.mkdir(exist_ok=True)
             print("Directorio: ", carpeta,  " creado")
@@ -164,5 +175,3 @@ def wordcloud(nombre_wordcloud, color_fondo, idioma):
     crearWordCloud(pred_pos, "positivo", upvote_mask, idioma)
     crearWordCloud(pred_neg, "negativo", downvote_mask, idioma)
     crearWordCloud(pred_neu, "neutral", comment_mask, idioma)
-
-    

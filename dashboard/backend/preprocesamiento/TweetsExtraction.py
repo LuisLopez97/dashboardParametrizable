@@ -1,5 +1,5 @@
 
-#Librerias
+# Librerias
 from tweepy.streaming import StreamListener
 from tweepy import Stream
 from pathlib import Path, PurePath
@@ -14,21 +14,24 @@ import csv
 import json
 
 #####################################
-#Autentificación para acceder a Twitter
-#Por medio de las credenciales
+# Autentificación para acceder a Twitter
+# Por medio de las credenciales
+
+
 class TweepyExtraction:
-    
+
     def __init__(self, tiempo):
         self.tiempo = tiempo
-        consumer_key = "hzv8CF7qvlGXvelOOIDOLXvyS" 
-        consumer_secret= "WxSn72jW90sP4FL9MEIKPmdbZi8WaPSRwOyN9TwLiE1lrYcecJ" 
+        consumer_key = "hzv8CF7qvlGXvelOOIDOLXvyS"
+        consumer_secret = "WxSn72jW90sP4FL9MEIKPmdbZi8WaPSRwOyN9TwLiE1lrYcecJ"
         access_token = "1166089196215422976-FBSUbTOiTBqXzFH9frP827kfDksGZy"
         access_token_secret = "Jrce99HJeSxA6Mh9sjRTbb8XsuKrOshdMMCrGYyeGwE9F"
         self.auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         self.auth.set_access_token(access_token, access_token_secret)
         self.api = tweepy.API(self.auth)
         ruta_actual = PurePath(Path.cwd())
-        self.ruta_extraccion =  Path(ruta_actual / 'TestData' / 'extraccion_tweets.csv')
+        self.ruta_extraccion = Path(
+            ruta_actual / 'TestData' / 'extraccion_tweets.csv')
 
     def recoleccion(self, idioma, palabra):
         # Borrar archivo para que se vuelva a escribir
@@ -40,7 +43,8 @@ class TweepyExtraction:
         csvWriter.writerow(['Author', 'Date', 'Text'])
         csvFile.close()
 
-        streamingAPI = tweepy.streaming.Stream(self.auth, CustomStreamListener(self.api, self.tiempo))
+        streamingAPI = tweepy.streaming.Stream(
+            self.auth, CustomStreamListener(self.api, self.tiempo))
         if idioma != "en" and idioma != "es":
             print("Idioma no reconocido: " + idioma)
             return
@@ -49,13 +53,14 @@ class TweepyExtraction:
 
 
 ######################################
-#Recolector y escuchador
+# Recolector y escuchador
 class CustomStreamListener(tweepy.StreamListener):
     def __init__(self, api, tiempo_limite):
         self.api = api
         self.tiempo_limite = tiempo_limite
         self.ruta_actual = PurePath(Path.cwd())
-        self.ruta_extraccion =  Path(self.ruta_actual / 'TestData' / 'extraccion_tweets.csv')
+        self.ruta_extraccion = Path(
+            self.ruta_actual / 'TestData' / 'extraccion_tweets.csv')
         self.tiempo_inicio = time()
 
     def on_status(self, status):
@@ -75,21 +80,22 @@ class CustomStreamListener(tweepy.StreamListener):
             text = status.extended_tweet["full_text"]
         else:
             text = status.text
-                
-        with open(self.ruta_extraccion, 'a', encoding='utf-8', newline='') as f: 
+
+        with open(self.ruta_extraccion, 'a', encoding='utf-8', newline='') as f:
             print(status.author.screen_name, status.created_at, text)
             writer = csv.writer(f)
-            writer.writerow([status.author.screen_name, status.created_at, text])
-
+            writer.writerow(
+                [status.author.screen_name, status.created_at, text])
 
     def on_error(self, status_code):
         print(sys.stderr, 'Encountered error with status code:', status_code)
-        return True # Don't kill the stream
+        return True  # Don't kill the stream
 
     def on_timeout(self):
         print(sys.stderr, 'Timeout...')
-        return True # Don't kill the stream
+        return True  # Don't kill the stream
 ######################################
+
 
 class ScrappingExtraction:
     def __init__(self, palabra, limite=None, fecha_inicio=dt.date(2019, 10, 1), fecha_final=dt.date.today(), idioma='en', bins=20):
@@ -99,20 +105,21 @@ class ScrappingExtraction:
         self.fecha_final = fecha_final
         self.idioma = idioma
         self.bins = bins
-        self.ruta_extraccion = Path(PurePath(Path.cwd()) / 'TestData' / 'extraccion_tweets.csv')
+        self.ruta_extraccion = Path(
+            PurePath(Path.cwd()) / 'TestData' / 'extraccion_tweets.csv')
 
     def recoleccion(self):
         from twitterscraper import query_tweets
         # Inicia recoleccion con idioma seleccionado por usuario
         print("=== RECOLECCIÓN TWEETSCRAPPING INICIADO")
         list_of_tweets = query_tweets(
-            query = self.palabra, 
-            limit = self.limite, 
-            begindate = self.fecha_inicio, 
-            enddate = self.fecha_final, 
-            lang = self.idioma, 
-            poolsize = self.bins
-            )
+            query=self.palabra,
+            limit=self.limite,
+            begindate=self.fecha_inicio,
+            enddate=self.fecha_final,
+            lang=self.idioma,
+            poolsize=self.bins
+        )
         # Transforma recolección a lista de diccionarios
         print("Transformando recolección a diccionarios...")
         tweets = self.get_tweets_info(list_of_tweets)
@@ -121,7 +128,8 @@ class ScrappingExtraction:
         # Filtrar por columnas de interes
         tweets_df = dataframe[["username", "timestamp", "text"]]
         # Estandarizar nombre de las columnas
-        tweets_df = tweets_df.rename(columns={"username": "Author", "timestamp": "Date", "text": "Text"})
+        tweets_df = tweets_df.rename(
+            columns={"username": "Author", "timestamp": "Date", "text": "Text"})
         # Borrar archivo para que se vuelva a escribir
         if self.ruta_extraccion.exists():
             os.remove(self.ruta_extraccion)
@@ -158,5 +166,3 @@ class ScrappingExtraction:
             }
             list_of_tweets_final.append(twitter_data)
         return list_of_tweets_final
-    
-    

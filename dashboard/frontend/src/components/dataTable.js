@@ -17,7 +17,7 @@ class DataTable extends Component {
     }
     getData = () => {
         this.setState({ loading: true }, () => {
-            Axios.get('/static/tweetsp.json/')
+            Axios.get('/static/prediccion.json')
                 .then(result => this.setState({
                     loading: false,
                     searchs: [...result.data],
@@ -29,30 +29,24 @@ class DataTable extends Component {
     render() {
         const columns = [
             {
-                name: 'Sentimiento',
-                selector: 'airline_sentiment',
+                name: 'Usuario',
+                selector: 'Author',
                 sortable: true,
-            },
-            {
-                name: 'Razón del Sentimiento',
-                selector: 'negativereason',
-                sortable: true,
-                wrap: true,
             },
             {
                 name: 'Texto',
-                selector: 'text',
+                selector: 'Text',
                 sortable: false,
                 wrap: true,
             },
             {
-                name: 'Usuario',
-                selector: 'name',
+                name: 'Fecha',
+                selector: 'Date',
                 sortable: true,
             },
             {
-                name: 'Ubicación',
-                selector: 'tweet_location',
+                name: 'Sentimiento',
+                selector: 'Sentiment',
                 sortable: true,
             },
         ];

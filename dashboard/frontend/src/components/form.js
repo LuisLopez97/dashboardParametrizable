@@ -1,44 +1,103 @@
 import React, { Component } from 'react'
 import Axios from 'axios'
 
+
+
 export class Form extends Component {
     constructor(props) {
         super(props)
     }
 
     state = {
-        keyword: '0',
-        idioma: '0',
+        keyword: '',
+        keywordError: '',
+        idioma: 'es',
+        idiomaError: '',
+        tweets: 100,
+        tweetsError: '',
     }
 
     handleSubmit = event => {
         event.preventDefault()
         const palabra = this.state.keyword;
         const idiom = this.state.idioma;
-        Axios.post(`/test`, {
-            keyword: palabra,
-            idioma: idiom,
-        })
-            .then(res => {
-                console.log(res);
-                console.log(res.data)
-                this.props.resetDatos()
-                this.props.getDatos()
-            }).catch(err => console.log(err))
-        document.getElementById("btnEnviar").disabled = true;
-        document.getElementById("btnEnviar").innerHTML = "Enviado";
-        document.getElementById("btnEnviar").className = "btn btn-success";
-        document.getElementById("spinner").className = "";
-        document.getElementById("inputKey").disabled = true;
+        const twets = this.state.tweets;
+        let esValido = this.validacion();
+        if (esValido) {
+            this.setState({
+                keywordError: '',
+                idiomaError: '',
+                tweetsError: '',
+            })
+            this.props.resetDatos()
+            document.getElementById("Erroridioma").className = "d-none";
+            document.getElementById("Errorkeyword").className = "d-none";
+            document.getElementById("Errortweets").className = "d-none";
+            Axios.post(`/test`, {
+                keyword: palabra,
+                idioma: idiom,
+                tweets: twets,
+            })
+                .then(res => {
+                    console.log(res);
+                    console.log(res.data)
+                    this.props.getDatos()
+                    this.desbloquearBoton()
+                }).catch(err => console.log(err))
+            document.getElementById("btnEnviar").disabled = true;
+            document.getElementById("btnEnviar").innerHTML = "Enviado";
+            document.getElementById("btnEnviar").className = "btn btn-success";
+            document.getElementById("inputKey").disabled = true;
+        }
     };
+
+    validacion = () => {
+        let keyword = this.state.keyword
+        let idioma = this.state.idioma
+        let tweets = this.state.tweets
+        if (idioma == "") {
+            this.setState({ idiomaError: 'No puedes dejar vacio el idioma' })
+            document.getElementById("Erroridioma").className = "alert alert-danger text-danger";
+            return false
+        }
+        if (idioma !== 'es' && idioma !== 'en') {
+            this.setState({ idiomaError: 'El idioma tiene que ser "es" o "en"' })
+            document.getElementById("Erroridioma").className = "alert alert-danger text-danger"
+            return false
+        }
+        if (keyword == "") {
+            this.setState({ keywordError: 'No puede enviar palabras vacias', })
+            document.getElementById("Errorkeyword").className = "alert alert-danger text-danger";
+            return false
+        }
+        if (keyword.match(/^\s*$/)) {
+            this.setState({ keywordError: 'No puede tener espacios en blanco', })
+            document.getElementById("Errorkeyword").className = "alert alert-danger text-danger";
+            return false
+        }
+        if (!parseInt(tweets)) {
+            this.setState({ tweetsError: 'La cantidad de Tweets debe ser numerica' })
+            document.getElementById("Errortweets").className = "alert alert-danger text-danger"
+            return false
+        }
+        return true
+    }
 
     handleKeyChange = event => {
         this.setState({ keyword: event.target.value })
-        document.getElementById("btnEnviar").className = "btn btn-primary"
     };
 
     handleIdiomChange = event => {
         this.setState({ idioma: event.target.value })
+    }
+    handleTweetChange = event => {
+        this.setState({ tweets: event.target.value })
+    }
+    desbloquearBoton = () => {
+        document.getElementById("btnEnviar").disabled = false;
+        document.getElementById("btnEnviar").innerHTML = "Enviar";
+        document.getElementById("btnEnviar").className = "btn btn-primary";
+        document.getElementById("inputKey").disabled = false;
     }
 
     render() {
@@ -46,16 +105,16 @@ export class Form extends Component {
             <div>
                 <div className="align-middle">
                     <form onSubmit={this.handleSubmit}>
-                        {/* <form action="/test" method="POST"> */}
                         <p className="display-4 py-4 text-center">Iniciar Recoleccion</p>
                         <div className="form-group">
                             <label>Seleccione el idioma</label>
                             <select
                                 className="form-control border border-primary"
                                 onChange={this.handleIdiomChange}>
-                                <option selected value="0">Español</option>
-                                <option value="1">Ingles</option>
+                                <option value="es">Español</option>
+                                <option value="en">Ingles</option>
                             </select>
+                            <div className="d-none" id="Erroridioma">{this.state.idiomaError}</div>
                         </div>
                         <div className="form-group text-center py-3">
                             <label>Palabra a buscar:</label>
@@ -68,26 +127,32 @@ export class Form extends Component {
                                     id="inputKey"
                                 />
                             </div>
+                            <div className="d-none" id="Errorkeyword">{this.state.keywordError}</div>
+                        </div>
+                        <div className="form-group">
+                            <label>Cantidad de Tweets a recolectar</label>
+                            <select
+                                className="form-control border border-primary"
+                                onChange={this.handleTweetChange}>
+                                <option type="number" value="100">100</option>
+                                <option value="1000">1,000</option>
+                                <option value="10000">10,000</option>
+                                <option value="100000">100,000</option>
+                            </select>
+                            <div className="d-none" id="Errortweets">{this.state.tweetsError}</div>
                         </div>
                         <div className="d-flex justify-content-center py-5">
                             <button
                                 type="submit"
                                 value="Submit"
                                 id="btnEnviar"
-                                className="d-none btn btn-primary">
+                                className="btn btn-primary">
                                 Enviar
-                                    </button>
+                            </button>
                         </div>
                     </form>
-                    <div className="d-none" id="spinner">
-                        <div className="d-flex justify-content-center">
-                            <div className="spinner-border py-5 px-5" role="status">
-                                <span className="sr-only">Loading...</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
-            </div >
+            </div>
         )
     }
 }

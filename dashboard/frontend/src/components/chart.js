@@ -16,7 +16,7 @@ class Chart extends Component {
     }
     getData = () => {
         this.setState({ loading: true }, () => {
-            Axios.get('/static/tweetsp.json/')
+            Axios.get('/static/prediccion.json')
                 .then(result => this.setState({
                     loading: false,
                     searchs: [...result.data],
@@ -38,7 +38,7 @@ class Chart extends Component {
                         <div className="col-xl-6 py-5">
                             <div className="card">
                                 <div className="card-body">
-                                    <Pies searchs={this.state.searchs} />
+                                    <Hbar searchs={this.state.searchs} />
                                 </div>
                             </div>
                         </div>
@@ -46,17 +46,10 @@ class Chart extends Component {
                 </div>
                 <div className="card-body">
                     <div className="row">
-                        <div className="col-xl-6 py-5 d-none d-lg-block">
+                        <div className="col-12">
                             <div className="card">
                                 <div className="card-body">
-                                    <Dona searchs={this.state.searchs} />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-xl-6 py-5">
-                            <div className="card">
-                                <div className="card-body">
-                                    <Hbar searchs={this.state.searchs} />
+                                    <Pies searchs={this.state.searchs} />
                                 </div>
                             </div>
                         </div>
