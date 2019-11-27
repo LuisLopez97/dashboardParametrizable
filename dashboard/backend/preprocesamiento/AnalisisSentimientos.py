@@ -66,14 +66,14 @@ def entrenar(dataset_entrenamiento, columna_tweets, columna_sentimientos, idioma
         # Imprimir el tiempo de ejecución
         print("TIEMPO ENTRENAMIENTO: ", round(time() - t0, 3), "s")
     elif idioma == "es":
-        # # Inicializando clase preprocesamiento en español
-        # prep = preprocesamiento_es(dataset_entrenamiento, columna_tweets, columna_sentimientos)
-        # # Iniciando Contador de tiempo para preparacion
-        # t0 = time()
-        # # Ejecutando la preparación de los datos
-        # prep.preparacion()
-        # # Imprimir el tiempo de ejecución
-        # print("TIEMPO PREPARACION DATOS ESPAÑOL: ", round(time() - t0, 3), "s")
+        # Inicializando clase preprocesamiento en español
+        prep = preprocesamiento_es(dataset_entrenamiento, columna_tweets, columna_sentimientos)
+        # Iniciando Contador de tiempo para preparacion
+        t0 = time()
+        # Ejecutando la preparación de los datos
+        prep.preparacion()
+        # Imprimir el tiempo de ejecución
+        print("TIEMPO PREPARACION DATOS ESPAÑOL: ", round(time() - t0, 3), "s")
         # Iniciando Contador de tiempo
         t0 = time()
         print("=== ENTRENAMIENTO INICIADO ===")
@@ -94,11 +94,11 @@ def predecir(dataset, columna_tweets, idioma):
     if idioma == "en":
         # Inicializando clase prediction
         pred = prediction("LogisticRegression_en",
-                          'CountVectorizer_en', dataset, columna_tweets)
+                          'CountVectorizer_en', dataset, columna_tweets, 'en')
     elif idioma == "es":
         # Inicializando clase prediction
         pred = prediction("LogisticRegression_es",
-                          'CountVectorizer_es', dataset, columna_tweets)
+                          'CountVectorizer_es', dataset, columna_tweets, 'es')
     else:
         print("Idioma no reconocido. Terminano.")
         return

@@ -96,7 +96,7 @@ class Preprocesamiento:
         tweets = tweets.str.replace(r'#(\w+)',"")
 
         # Remover Emoticones
-        print("Convertir Emoticones")
+        print("Remover Emoticones")
         tweets = tweets.str.replace("["
                         u"\U0001F600-\U0001F64F"  # emoticons
                         u"\U0001F300-\U0001F5FF"  # symbols & pictographs

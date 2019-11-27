@@ -1,4 +1,5 @@
 from Preprocesamiento import Preprocesamiento as preprocesamiento
+from PreprocesamientoES import Preprocesamiento as preprocesamiento_es
 from FeatureExtraction import FeatureExtraction as fe
 from pathlib import Path, PurePath
 from tqdm import tqdm
@@ -8,11 +9,12 @@ import pickle
 import os
 
 class Prediction:
-    def __init__(self, nombre_clasificador, nombre_vectorizador, test_data, columna_tweets):
+    def __init__(self, nombre_clasificador, nombre_vectorizador, test_data, columna_tweets, idioma):
         self.nombre_clasificador = nombre_clasificador
         self.nombre_vectorizador = nombre_vectorizador
         self.test_data = test_data
         self.columna_tweets = columna_tweets
+        self.idioma = idioma
 
     def predecir(self):
         # Definir ruta para lectura de Pickle de clasificador
@@ -28,12 +30,22 @@ class Prediction:
         features = tweets[self.columna_tweets]
 
         # Preprocesamiento
-        prep = preprocesamiento("test.csv", self.columna_tweets, "")
-        tweets_limpios = prep.limpieza(features)
+        if self.idioma == 'en':
+            prep = preprocesamiento("test.csv", self.columna_tweets, "")
+            tweets_limpios = prep.limpieza(features)
 
-        # lemmatización
-        print("Iniciar Lemmatización")
-        lemmatizated_data = prep.lemmatization(tweets_limpios)
+            # lemmatización
+            print("Iniciar Lemmatización")
+            lemmatizated_data = prep.lemmatization(tweets_limpios)
+        elif self.idioma == 'es':
+            prep = preprocesamiento_es("test.csv", self.columna_tweets, "")
+            tweets_limpios = prep.limpieza(features)
+            # lemmatización
+            print("Iniciar Lemmatización")
+            lemmatizated_data = prep.lemmatizacion(tweets_limpios)
+        else:
+            print("Idioma no reconocido: " + self.idioma)
+            return
 
         # Guardar preprocesamiento para el WordCloud
         print("Guardando preprocesamiento para el WordCloud")
@@ -52,11 +64,11 @@ class Prediction:
         # Unir prediccion al Dataframe
         # tweets.insert(0, 'Sentiment', pred)
         tweets['Sentiment'] = pred
-        
+
         # Convertir numeros a palabras
         tweets["Sentiment"] = tweets["Sentiment"].replace(
             to_replace=[1, 0, -1], value=["positivo", "neutral", "negativo"])
-        
+
         # Guardar a CSV
         print("Guardando prediccion como CSV...")
         ruta_actual = PurePath(Path.cwd())                                # Ruta actual
