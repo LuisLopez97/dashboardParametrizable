@@ -1,2 +1,5 @@
 node_modules
 dashboard/backend/preprocesamiento/DB/Resampling_SMOTE/
+__pycache__/
+*.pyc
+.vscode/
