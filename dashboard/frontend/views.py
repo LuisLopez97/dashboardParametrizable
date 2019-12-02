@@ -25,7 +25,7 @@ def test(request):
         sentimiento.extraccionHistorico(
             palabra,  idioma, tweets, fecha_inicio)
         sentimiento.predecir("extraccion_tweets.csv", "Text", idioma)
-        sentimiento.wordcloud(palabra, "white", idioma)
+        # sentimiento.wordcloud(palabra, "white", idioma)
         return HttpResponse(status=200)
 
     else:
