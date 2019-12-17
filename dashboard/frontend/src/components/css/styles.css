@@ -1,0 +1,145 @@
+.rcw-conversation-container .rcw-header {
+    background-color: aqua;
+    border-radius: 7px 10px  0;
+    color: black;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    text-align: center;
+    padding: 5px 3 5px
+}
+
+.rcw-conversation-container .rcw-title {
+    font-size: 24px;
+    padding: 0px 0
+}
+.rcw-conversation-container {
+    -webkit-animation-delay: 0;
+    -webkit-animation-duration: .5s;
+    -webkit-animation-name: d;
+    -webkit-animation-fill-mode: forwards;
+    -moz-animation-delay: 0;
+    -moz-animation-duration: .5s;
+    -moz-animation-name: d;
+    -moz-animation-fill-mode: forwards;
+    animation-delay: 0;
+    animation-duration: .5s;
+    animation-name: d;
+    animation-fill-mode: forwards;
+    border-radius: 10px;
+    
+    box-shadow: 0 2px 10px 1px #b5b5b5
+}
+@media screen and (max-width:800px) {
+    .rcw-conversation-container {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        height: 100%
+    }
+}
+
+
+.quick-button {
+    background: none;
+    border-radius: 15px;
+    border: 1px solid #35cce6;
+    font-weight: 700;
+    padding: 5px 10px;
+    margin-top: 3px;
+    cursor: pointer;
+    outline: 0
+}
+.quick-button:active {
+    background: #35cce6;
+    color: #fff
+}
+.rcw-messages-container {
+    background-color: white;
+    height: 44vh;
+    max-height: 410px;
+    overflow-y: scroll;
+    padding-top: 10px;
+    -webkit-overflow-scrolling: touch
+}
+
+/*Se elimina la parte de enviar mensajes*/
+
+.rcw-send {
+    background: #f4f7f9;
+    border: 0
+}
+
+.rcw-send .rcw-send-icon {
+    display: auto;
+    height: 25px
+    
+}
+
+@media screen and (max-width:800px) {
+    .rcw-sender {
+        border-radius: 8;
+        -ms-flex-negative: 40;
+        flex-shrink: 0
+    }
+}
+.quick-buttons-container {
+    background: rgb(255, 255, 255);
+    /* display: block; */
+    overflow-x: auto;
+    overflow-y: scroll;
+    padding: 5px
+}
+.quick-buttons-container .quick-buttons {
+    list-style: none;
+    padding: 5px;
+    margin: 5px;
+    height: 95px;
+    text-align: center
+}
+.quick-buttons-container .quick-buttons .quick-list-button {
+    display: table-row;
+    top: 5px;
+    margin-right: 20px
+}
+.rcw-launcher {
+    -webkit-animation-delay: 0;
+    -webkit-animation-duration: .5s;
+    -webkit-animation-name: d;
+    -webkit-animation-fill-mode: forwards;
+    -moz-animation-delay: 0;
+    -moz-animation-duration: .5s;
+    -moz-animation-name: d;
+    -moz-animation-fill-mode: forwards;
+    animation-delay: 0;
+    animation-duration: .5s;
+    animation-name: d;
+    animation-fill-mode: forwards;
+    -ms-flex-item-align: end;
+    align-self: flex-end;
+    background-color: #35cce6;
+    border: 0;
+    border-radius: 30%;
+    box-shadow: 0 2px 10px 1px #b5b5b5;
+    height: 60px;
+    margin-top: 4px;
+    margin-left: 20px;
+    width: 60px
+}
+.rcw-close-launcher {
+    width: 20px;
+    -webkit-animation-delay: 0;
+    -webkit-animation-duration: .5s;
+    -webkit-animation-name: b;
+    -webkit-animation-fill-mode: forwards;
+    -moz-animation-delay: 0;
+    -moz-animation-duration: .5s;
+    -moz-animation-name: b;
+    -moz-animation-fill-mode: forwards;
+    animation-delay: 0;
+    animation-duration: .5s;
+    animation-name: b;
+    animation-fill-mode: forwards
+}

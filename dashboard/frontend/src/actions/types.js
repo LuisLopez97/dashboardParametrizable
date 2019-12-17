@@ -1,3 +1,2 @@
-export const GET_SEARCHS = "GET_SEARCHS";
-export const DELETE_SEARCHS = "DELETE_SEARCHS";
-export const ADD_SEARCHS = "ADD_SEARCHS";
+export const GET_BUSQUEDAS = 'GET_BUSQUEDAS';
+export const ADD_BUSQUEDAS = 'ADD_BUSQUEDAS';

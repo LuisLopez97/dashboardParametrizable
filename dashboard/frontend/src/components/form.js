@@ -1,5 +1,8 @@
-import React, { Component } from 'react'
-import Axios from 'axios'
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import propTypes from 'prop-types';
+import { addBusquedas } from '../actions/busquedas';
+import Axios from 'axios';
 
 
 
@@ -17,6 +20,18 @@ export class Form extends Component {
         tweetsError: '',
     }
 
+    static propTypes = {
+        addBusquedas: propTypes.func.isRequired
+    }
+
+    guardarDB = () => {
+        const lenguaje = this.state.idioma;
+        const palabraclave = this.state.keyword;
+        const cantidadtweets = parseInt(this.state.tweets);
+        const busqueda = { lenguaje, palabraclave, cantidadtweets };
+        this.props.addBusquedas(busqueda);
+
+    }
     handleSubmit = event => {
         event.preventDefault()
         const palabra = this.state.keyword;
@@ -33,6 +48,7 @@ export class Form extends Component {
             document.getElementById("Erroridioma").className = "d-none";
             document.getElementById("Errorkeyword").className = "d-none";
             document.getElementById("Errortweets").className = "d-none";
+            this.guardarDB()
             Axios.post(`/test`, {
                 keyword: palabra,
                 idioma: idiom,
@@ -157,4 +173,4 @@ export class Form extends Component {
     }
 }
 
-export default Form
+export default connect(null, { addBusquedas })(Form);

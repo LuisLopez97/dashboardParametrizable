@@ -15,6 +15,7 @@ class Navbar extends Component {
                         <a className="nav-item nav-link py-3" href="/#/Tweets">Tweets</a>
                         <a className="nav-item nav-link py-3" href="/#/Charts">Charts</a>
                         <a className="nav-item nav-link py-3" href="/#/WordClouds">Clouds</a>
+                        <a className="nav-item nav-link py-3" href="/#/Historial">Historial</a>
                     </div>
                 </div>
             </nav>

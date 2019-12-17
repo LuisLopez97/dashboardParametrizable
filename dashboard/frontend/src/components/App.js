@@ -11,6 +11,8 @@ import Section1 from './section1'
 import DataTable from './dataTable';
 import Chart from './chart';
 import WordClouds from './wordClouds';
+import Historial from './Historial';
+import Chatbot from './bot';
 
 class App extends React.Component {
 
@@ -33,6 +35,10 @@ class App extends React.Component {
                                         component={Chart} />
                                     <Route exact path="/WordClouds"
                                         component={WordClouds} />
+                                    <Route exact path="/Historial"
+                                        component={Historial} />
+                                    <Route exact path="/ChatBot"
+                                        component={Chatbot} />
                                 </Switch>
                             </Router>
                         </div>
