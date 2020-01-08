@@ -17,10 +17,10 @@ import sys
 from time import time
 
 
-def instalarLibrarias():
+def instalarLibrarias(ruta_archivo):
     # Instala las librerías necesarias para ejecutar el proceso de modelado
     subprocess.call([sys.executable, "-m", "pip",
-                     "install", "-r", "requirements.txt"])
+                     "install", "-r", ruta_archivo])
 
 
 def extraccionTiempoReal(palabra, idioma, tiempo):
@@ -61,7 +61,7 @@ def entrenar(dataset_entrenamiento, columna_tweets, columna_sentimientos, idioma
         fe = feature_extraction("data_lemmatized.csv",
                                 'data_lemmatized', "sentiment", "en")
         # Ejecutando la extracción, indicandole el tipo de extraccion
-        fe.extraction('bagofwords')
+        fe.extraction('tfidf')
         print("=== ENTRENAMIENTO TERMINADO EXITOSAMENTE ===")
         # Imprimir el tiempo de ejecución
         print("TIEMPO ENTRENAMIENTO: ", round(time() - t0, 3), "s")
@@ -93,8 +93,8 @@ def entrenar(dataset_entrenamiento, columna_tweets, columna_sentimientos, idioma
 def predecir(dataset, columna_tweets, idioma):
     if idioma == "en":
         # Inicializando clase prediction
-        pred = prediction("LogisticRegression_en",
-                          'CountVectorizer_en', dataset, columna_tweets)
+        pred = prediction("SGD_en",
+                          'TfidfVectorizer_en', dataset, columna_tweets)
     elif idioma == "es":
         # Inicializando clase prediction
         pred = prediction("LogisticRegression_es",

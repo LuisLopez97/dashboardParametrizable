@@ -153,7 +153,7 @@ class FeatureExtraction:
 
         # Guardando como pickle
         self.crearPickle(tfidf_vectorizer,
-                         'Vectorizers/TfidfVectorizer' + self.idioma)
+                         'Vectorizers/TfidfVectorizer_' + self.idioma)
         return tfidf_train, tfidf_test, tfidf_vectorizer
 
     @progress_wrapped(estimated_time=100)

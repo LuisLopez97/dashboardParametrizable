@@ -76,7 +76,7 @@ class Preprocesamiento:
 
         # Iniciar lemmatización
         print("Iniciar Lemmatización")
-        lemmatizated_data = self.lemmatization(tweets_limpios["clean_text"])
+        lemmatizated_data = self.porterStemmer(tweets_limpios["clean_text"])
 
         # Borrar la columna de datos limpios
         del tweets_limpios["clean_text"]
