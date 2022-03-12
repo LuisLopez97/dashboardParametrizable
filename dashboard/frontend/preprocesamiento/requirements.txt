@@ -2,7 +2,7 @@
 # https://github.com/damnever/pigar
 
 # AnalisisSentimientos.py: 9
-Pillow == 6.2.1
+Pillow == 9.0.1
 
 # Preprocesamiento.py: 19
 # PreprocesamientoES.py: 15
