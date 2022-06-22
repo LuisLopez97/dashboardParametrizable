@@ -23,7 +23,7 @@ nltk == 3.4.5
 # Prediction.py: 6
 # Preprocesamiento.py: 17
 # PreprocesamientoES.py: 13
-numpy == 1.17.3
+numpy == 1.22.0
 
 # AnalisisSentimientos.py: 13
 # FeatureExtraction.py: 18
